@@ -12,14 +12,14 @@ import { useModo } from "@/lib/modo";
 interface Demo { email: string; pass: string; titulo: string; rol: string }
 
 const DEMO_B2B: Demo[] = [
-  { email: "gerencia@acopiostallanes.pe", pass: "demo1234", titulo: "Acopios Tallanes", rol: "Piura · 6 proveedores · con suscripción" },
+  { email: "gerencia@acopiostallanes.pe", pass: "demo1234", titulo: "Acopios Tallanes", rol: "6 proveedores · con suscripción" },
   { email: "operaciones@reciclajesnorte.pe", pass: "demo1234", titulo: "Reciclajes del Norte", rol: "Sullana · sin suscripción" },
 ];
 
 // En la experiencia de intercambio solo hay empresas (y la moderación): las cuentas de personas no se ofrecen.
 const DEMO: Demo[] = [
-  { email: "ana@vallesol.pe", pass: "demo1234", titulo: "Agroexport Vallesol", rol: "Empresa ofertante · Piura" },
-  { email: "carlos@biocompost.pe", pass: "demo1234", titulo: "BioCompost Piura", rol: "Empresa receptora" },
+  { email: "ana@vallesol.pe", pass: "demo1234", titulo: "Agroexport Vallesol", rol: "Empresa ofertante" },
+  { email: "carlos@biocompost.pe", pass: "demo1234", titulo: "BioCompost", rol: "Empresa receptora" },
   { email: "admin@swapit.pe", pass: "admin12345", titulo: "Administrador", rol: "Moderación" },
 ];
 

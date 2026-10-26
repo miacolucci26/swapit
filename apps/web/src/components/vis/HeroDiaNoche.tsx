@@ -146,14 +146,7 @@ export default function HeroDiaNoche() {
       <PublicNav sobreHero />
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 pb-40 pt-28 text-center md:pb-48">
-        <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
-          <span className="relative flex size-2" aria-hidden="true">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-70 motion-reduce:animate-none" />
-            <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
-          </span>
-          Piura · Lambayeque
-        </p>
-        <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
+        <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
         <p className="mx-auto mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_20px_rgba(0,0,0,0.65)] md:text-2xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <LinkBtn href="/login" className="min-h-12 rounded-full !bg-white px-7 !text-[#18181b] shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:!bg-zinc-100">Probar la demo</LinkBtn>

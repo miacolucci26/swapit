@@ -43,8 +43,7 @@ export default function LandingMarketplace() {
       <main className="flex-1">
         <section className="border-b border-line bg-white">
           <div className="mx-auto max-w-5xl px-4 py-10 md:py-14">
-            <p className="text-sm font-medium text-pri-700">Piura · Lambayeque</p>
-            <h1 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-nav-900 md:text-[40px]">
+            <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-nav-900 md:text-[40px]">
               Intercambia excedentes entre empresas del norte.
             </h1>
             <p className="mt-3 max-w-xl text-base text-ink-700 md:text-lg">Lo que a una empresa le sobra es insumo de otra. Publica, encuentra y negocia materiales con fotos y detalle.</p>
