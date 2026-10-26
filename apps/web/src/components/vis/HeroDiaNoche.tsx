@@ -124,6 +124,8 @@ function Fondo({ noche }: { noche: boolean }) {
       <div className={`absolute inset-0 bg-indigo-950/40 transition-opacity duration-[1400ms] motion-reduce:transition-none ${noche ? "opacity-100" : "opacity-0"}`} />
       {/* Velos: contraste del texto arriba y fusión con la página abajo */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/35" />
+      {/* Mancha oscura suave detrás del texto central */}
+      <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_42%,rgba(0,0,0,0.45),transparent_75%)]" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-zinc-50" />
     </div>
   );
@@ -149,7 +151,7 @@ export default function HeroDiaNoche() {
           Piura · Lambayeque
         </p>
         <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
-        <p className="mx-auto mt-5 max-w-xl text-base text-white/90 [text-shadow:0_1px_16px_rgba(0,0,0,0.5)] md:text-xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
+        <p className="mx-auto mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_20px_rgba(0,0,0,0.65)] md:text-2xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <LinkBtn href="/login" className="min-h-12 rounded-full bg-white px-7 text-zinc-900 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:bg-zinc-100">Probar la demo</LinkBtn>
           <LinkBtn href="/registro" variante="borde" className="min-h-12 rounded-full border-white/40 bg-white/10 px-7 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20">Crear cuenta</LinkBtn>
