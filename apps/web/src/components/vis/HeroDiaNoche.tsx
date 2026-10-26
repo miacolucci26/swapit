@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import PublicNav from "../PublicNav";
+import { fijarTema, useTema } from "@/lib/tema";
 import { LinkBtn } from "../ui";
 
 /**
@@ -133,7 +134,9 @@ function Fondo({ noche }: { noche: boolean }) {
 
 /** Hero de la portada: escena día/noche, panel de cristal con el título y los CTA. */
 export default function HeroDiaNoche() {
-  const [noche, setNoche] = useState(false);
+  // El interruptor del hero controla el tema de TODA la página.
+  const noche = useTema() === "oscuro";
+  const setNoche = (v: boolean) => fijarTema(v ? "oscuro" : "claro");
   const [sonido, setSonido] = useState(false);
   useSonido(sonido, noche);
 
@@ -153,7 +156,7 @@ export default function HeroDiaNoche() {
         <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
         <p className="mx-auto mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_20px_rgba(0,0,0,0.65)] md:text-2xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <LinkBtn href="/login" className="min-h-12 rounded-full bg-white px-7 text-zinc-900 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:bg-zinc-100">Probar la demo</LinkBtn>
+          <LinkBtn href="/login" className="min-h-12 rounded-full !bg-white px-7 text-[#18181b] shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:!bg-zinc-100">Probar la demo</LinkBtn>
           <LinkBtn href="/registro" variante="borde" className="min-h-12 rounded-full border-white/40 bg-white/10 px-7 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20">Crear cuenta</LinkBtn>
         </div>
       </div>

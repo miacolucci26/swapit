@@ -172,3 +172,67 @@ h1, h2, h3, h4 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * Modo oscuro. Se activa con la clase `dark` en <html> (lib/tema.ts; script en layout.tsx para evitar el parpadeo).
+ * Estrategia: se reasignan los tokens de neutros y tintes (los usan todas las pantallas) y la escala zinc de la portada;
+ * los fondos sólidos (bg-pri-600, bg-nav-700…) NO cambian, y los TEXTOS de azul/verde oscuro se aclaran con reglas puntuales.
+ * ------------------------------------------------------------------------------------------------------------------ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html.dark {
+  color-scheme: dark;
+  --background: #0b0d11;
+  --foreground: #e8ebf1;
+
+  --color-bg: #0b0d11;
+  --color-surface-2: #161a21;
+  --color-line: #262c36;
+  --color-ink-900: #e8ebf1;
+  --color-ink-700: #c3c9d4;
+  --color-ink-500: #9aa3b2;
+  --color-ink-400: #8892a3;
+  --color-ink-300: #3a4250;
+  --color-ink-200: #2a303a;
+  --color-ink-100: #20252d;
+
+  --color-nav-50: #182233;
+  --color-nav-100: #1f2d45;
+  --color-nav-200: #2c3f61;
+  --color-pri-50: #0f2a24;
+  --color-pri-100: #123a31;
+  --color-pri-200: #1a5a4a;
+  --color-ambar-50: #2a210e;
+  --color-ambar-100: #3a2d12;
+  --color-error-tint: #2d1513;
+  --color-error-ink: #ff9a90;
+  --color-error: #ff8478;
+
+  /* Escala zinc invertida: lo que era «fondo claro» pasa a oscuro y el texto oscuro a claro. */
+  --color-zinc-50: #0f1115;
+  --color-zinc-100: #171a20;
+  --color-zinc-200: #262b34;
+  --color-zinc-300: #343b47;
+  --color-zinc-400: #6b7482;
+  --color-zinc-500: #8d96a5;
+  --color-zinc-600: #aeb6c3;
+  --color-zinc-700: #c9cfd9;
+  --color-zinc-800: #e0e4ea;
+  --color-zinc-900: #f1f3f6;
+  --color-zinc-950: #fafafa;
+}
+
+/* Superficies blancas y su variante translúcida (las de cristal de la portada, bg-white/10…/25, no se tocan). */
+html.dark .bg-white { background-color: #12151b; }
+html.dark .bg-white\/70 { background-color: rgb(18 21 27 / 0.7); }
+html.dark .bg-white\/80 { background-color: rgb(18 21 27 / 0.8); }
+html.dark .bg-white\/90 { background-color: rgb(18 21 27 / 0.9); }
+
+/* Textos de color oscuro que sobre fondo oscuro no se leerían. */
+html.dark .text-nav-900, html.dark .text-nav-800 { color: #e8eef9; }
+html.dark .text-nav-700, html.dark .text-nav-600, html.dark .text-nav-500 { color: #8fb0e4; }
+html.dark .text-pri-900, html.dark .text-pri-800, html.dark .text-pri-700, html.dark .text-pri-600 { color: #5fd0b3; }
+html.dark .text-emerald-900, html.dark .text-emerald-800, html.dark .text-emerald-700, html.dark .text-emerald-600 { color: #5fd0b3; }
+html.dark .text-ambar-800, html.dark .text-ambar-700, html.dark .text-ambar-600 { color: #f4c152; }
+
+body { transition: background-color 0.3s ease, color 0.3s ease; }

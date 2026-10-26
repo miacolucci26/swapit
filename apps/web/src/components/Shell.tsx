@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { Logo } from "./Logo";
+import ToggleTema from "./ToggleTema";
 import { Cargando } from "./ui";
 import { Icono, type NombreIcono } from "./vis/Iconos";
 
@@ -114,8 +115,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="border-t border-white/10 px-5 py-4 text-sm">
           <div className="truncate font-semibold">{user.empresa.razonSocial}</div>
-          <div className="truncate text-xs text-nav-200">{user.nombre}</div>
-          <button onClick={logout} className="mt-2 text-xs font-medium text-nav-200 underline-offset-2 hover:text-white hover:underline">Cerrar sesión</button>
+          <div className="truncate text-xs text-zinc-400">{user.nombre}</div>
+          <button onClick={logout} className="mt-2 text-xs font-medium text-zinc-400 underline-offset-2 hover:text-white hover:underline">Cerrar sesión</button>
         </div>
       </aside>
 
@@ -137,13 +138,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </>
             )}
           </nav>
-          <span className="shrink-0 text-sm text-ink-500">{user.nombre}</span>
+          <span className="flex shrink-0 items-center gap-3 text-sm text-ink-500">{user.nombre}<ToggleTema /></span>
         </header>
 
         {/* Cabecera móvil */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200/70 bg-white/70 px-4 backdrop-blur-xl md:hidden">
           <Logo tamano={28} />
-          <button onClick={logout} className="min-h-10 rounded-control px-2 text-sm font-medium text-nav-700">Salir</button>
+          <span className="flex items-center gap-1"><ToggleTema /><button onClick={logout} className="min-h-10 rounded-control px-2 text-sm font-medium text-nav-700">Salir</button></span>
         </header>
 
         <main className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-6 md:pb-10 md:pt-6 lg:px-8">

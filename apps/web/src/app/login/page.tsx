@@ -81,7 +81,7 @@ export default function LoginPage() {
               {error}
             </p>
           )}
-          <Btn disabled={loading} className="min-h-11 rounded-xl bg-zinc-900 shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_1px_2px_rgba(24,24,27,0.2)] hover:bg-zinc-700">{loading ? "Ingresando…" : "Ingresar"}</Btn>
+          <Btn disabled={loading} className="min-h-11 rounded-xl bg-zinc-900 dark:text-zinc-50 shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_1px_2px_rgba(24,24,27,0.2)] hover:bg-zinc-700">{loading ? "Ingresando…" : "Ingresar"}</Btn>
           <p className="text-center text-sm text-zinc-600">¿Sin cuenta? <Link href="/registro" className="inline-flex min-h-10 items-center font-semibold text-emerald-700 underline underline-offset-4">Crear cuenta</Link></p>
         </form>
 
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   onClick={() => entrar(d.email, d.pass)}
                   className="group relative flex min-h-16 w-full items-center gap-3 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/80 px-4 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04)] backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:border-emerald-400/70 hover:shadow-[0_8px_24px_-10px_rgba(16,185,129,0.4)] focus-visible:outline-2 focus-visible:outline-emerald-500 disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-zinc-900 text-sm font-semibold text-white">{d.titulo.charAt(0)}</span>
+                  <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-zinc-900 text-sm font-semibold text-white dark:text-zinc-50">{d.titulo.charAt(0)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold leading-tight tracking-tight text-zinc-900">{d.titulo}</span>
                     <span className="block text-xs text-zinc-500">{d.rol}</span>
