@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CADENAS, nombreSector, residuoPorId, vidasParaMype } from "@swapit/shared";
-import PublicNav from "./PublicNav";
 import { Segmented, Seccion } from "./ui";
 import { CLASE_SECTOR } from "./vis/CadenaFlujo";
 import { Icono } from "./vis/Iconos";
@@ -109,7 +108,6 @@ export default function LandingB2B() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
-      <PublicNav />
       <main className="flex-1">
         <HeroDiaNoche />
         <section className="relative z-20 -mt-16 px-4 pb-4">
@@ -118,7 +116,7 @@ export default function LandingB2B() {
 
         <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 pb-12 pt-16 md:pb-16 md:pt-20">
           {/* Cómo funciona */}
-          <Seccion titulo="Cómo funciona" descripcion="Cuatro pasos, desde el reporte del proveedor hasta el certificado.">
+          <Seccion id="como-funciona" titulo="Cómo funciona" descripcion="Cuatro pasos, desde el reporte del proveedor hasta el certificado.">
             <ol aria-label="Cómo funciona" className="relative grid gap-3 md:grid-cols-4">
               <div aria-hidden="true" className="absolute left-[12%] right-[12%] top-[30px] hidden h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent md:block" />
               {CICLO.map((c, k) => (
@@ -149,7 +147,7 @@ export default function LandingB2B() {
           </Seccion>
 
           {/* Beneficios */}
-          <Seccion titulo="Qué te da Swapit" descripcion="Una herramienta para acopiadores, no un marketplace.">
+          <Seccion id="beneficios" titulo="Qué te da Swapit" descripcion="Una herramienta para acopiadores, no un marketplace.">
             <ul className="grid gap-3 md:grid-cols-3">
               {BENTO.map((b) => (
                 <li key={b.titulo} className={`${SUPERFICIE} flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:border-zinc-300`}>

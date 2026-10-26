@@ -1,20 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import PublicNav from "../PublicNav";
 import { LinkBtn } from "../ui";
 
 /**
  * Hero a pantalla completa con escena día/noche (concepto inspirado en «Elsewhere», de @gughigug en 21st.dev; implementación propia).
- * El fondo es una escena CSS/SVG (sin video ni imágenes); el interruptor cambia de día a noche con un fundido, y el paisaje
+ * El fondo es una foto del valle (public/hero-valle.webp); el interruptor cambia de día a noche con un fundido, y el paisaje
  * sonoro opcional se genera en el navegador con Web Audio (sin archivos): notas suaves de día, cigarras de noche. Silencio por defecto.
  */
-
-// Posiciones fijas (porcentaje) para que el render sea determinista entre servidor y cliente.
-const ESTRELLAS: [number, number, number][] = [
-  [8, 12, 2], [15, 30, 1], [22, 8, 1], [31, 22, 2], [38, 10, 1], [46, 28, 1], [54, 7, 2], [61, 19, 1],
-  [68, 33, 1], [74, 11, 2], [82, 25, 1], [89, 9, 1], [93, 31, 2], [12, 44, 1], [27, 38, 1], [49, 41, 1],
-  [71, 45, 1], [86, 42, 1],
-];
 
 const NOTAS_HZ = [261.63, 329.63, 392.0, 440.0, 523.25, 659.25]; // pentatónica de Do
 
@@ -116,43 +110,21 @@ function BotonSonido({ activo, onChange }: { activo: boolean; onChange: (v: bool
   );
 }
 
-/** Escena de fondo: dos cielos que se funden, astro, estrellas, nubes y colinas. Decorativa (aria-hidden). */
-function Escena({ noche }: { noche: boolean }) {
-  const fundido = "transition-opacity duration-[1200ms] ease-in-out motion-reduce:transition-none";
+/** Fondo: la foto del valle; de noche se oscurece y vira a azul con filtros (la misma imagen, sin un segundo archivo). */
+function Fondo({ noche }: { noche: boolean }) {
   return (
-    <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-      <div className={`absolute inset-0 bg-gradient-to-b from-sky-600 via-teal-400 to-emerald-200 ${fundido} ${noche ? "opacity-0" : "opacity-100"}`} />
-      <div className={`absolute inset-0 bg-gradient-to-b from-zinc-950 via-indigo-950 to-teal-900 ${fundido} ${noche ? "opacity-100" : "opacity-0"}`} />
-
-      {/* Sol y luna: suben y bajan por el cielo */}
-      <div className={`absolute left-[72%] top-[16%] size-24 rounded-full bg-amber-100 shadow-[0_0_80px_30px_rgba(253,230,138,0.55)] transition-all duration-[1400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none md:size-32 ${noche ? "translate-y-[120%] opacity-0" : "translate-y-0 opacity-100"}`} />
-      <div className={`absolute left-[22%] top-[14%] size-20 rounded-full bg-zinc-100 shadow-[0_0_70px_18px_rgba(199,210,254,0.35)] transition-all duration-[1400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none md:size-24 ${noche ? "translate-y-0 opacity-100" : "-translate-y-[120%] opacity-0"}`}>
-        <span className="absolute left-[58%] top-[24%] size-4 rounded-full bg-zinc-300/70" />
-        <span className="absolute left-[24%] top-[56%] size-5 rounded-full bg-zinc-300/60" />
-      </div>
-
-      {/* Estrellas */}
-      <div className={`absolute inset-0 ${fundido} ${noche ? "opacity-100" : "opacity-0"}`}>
-        {ESTRELLAS.map(([x, y, t], i) => (
-          <span key={i} className={`absolute rounded-full bg-white ${t === 2 ? "size-[3px]" : "size-0.5"} ${i % 3 === 0 ? "animate-pulse motion-reduce:animate-none" : ""}`} style={{ left: `${x}%`, top: `${y}%` }} />
-        ))}
-      </div>
-
-      {/* Nubes (solo de día) */}
-      <div className={`absolute inset-0 ${fundido} ${noche ? "opacity-0" : "opacity-100"}`}>
-        <span className="absolute left-[10%] top-[24%] h-8 w-44 rounded-full bg-white/50 blur-xl" />
-        <span className="absolute left-[48%] top-[14%] h-7 w-56 rounded-full bg-white/40 blur-xl" />
-        <span className="absolute left-[64%] top-[38%] h-6 w-40 rounded-full bg-white/35 blur-xl" />
-      </div>
-
-      {/* Colinas: tres planos, el color cambia con el modo */}
-      <svg viewBox="0 0 1440 360" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[38%] w-full">
-        <path d="M0 150 C 240 70 420 130 640 100 C 900 60 1120 140 1440 90 L1440 360 L0 360 Z" className={`transition-colors duration-[1200ms] motion-reduce:transition-none ${noche ? "fill-teal-900/70" : "fill-emerald-300/80"}`} />
-        <path d="M0 210 C 200 150 440 230 700 180 C 960 130 1180 220 1440 170 L1440 360 L0 360 Z" className={`transition-colors duration-[1200ms] motion-reduce:transition-none ${noche ? "fill-emerald-950" : "fill-emerald-500"}`} />
-        <path d="M0 280 C 260 230 520 300 780 260 C 1040 220 1240 290 1440 250 L1440 360 L0 360 Z" className={`transition-colors duration-[1200ms] motion-reduce:transition-none ${noche ? "fill-zinc-950" : "fill-emerald-700"}`} />
-      </svg>
-      {/* Velo para asegurar el contraste del texto */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/30" />
+    <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden bg-sky-700">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/hero-valle.webp"
+        alt=""
+        fetchPriority="high"
+        className={`size-full object-cover object-[50%_85%] transition-[filter] duration-[1400ms] ease-in-out motion-reduce:transition-none ${noche ? "brightness-[0.38] contrast-110 hue-rotate-[200deg] saturate-[0.8]" : "brightness-100"}`}
+      />
+      <div className={`absolute inset-0 bg-indigo-950/40 transition-opacity duration-[1400ms] motion-reduce:transition-none ${noche ? "opacity-100" : "opacity-0"}`} />
+      {/* Velos: contraste del texto arriba y fusión con la página abajo */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/35" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-zinc-50" />
     </div>
   );
 }
@@ -164,24 +136,23 @@ export default function HeroDiaNoche() {
   useSonido(sonido, noche);
 
   return (
-    <section className="relative isolate flex min-h-[calc(100svh-57px)] flex-col overflow-hidden text-white" aria-label="Presentación">
-      <Escena noche={noche} />
+    <section className="relative isolate flex min-h-[100svh] flex-col overflow-hidden text-white" aria-label="Presentación">
+      <Fondo noche={noche} />
+      <PublicNav sobreHero />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 pb-32 pt-10 text-center md:pb-40">
-        <div className="w-full max-w-2xl rounded-3xl border border-white/20 bg-white/10 p-6 shadow-[0_1px_0_rgba(255,255,255,0.3)_inset,0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl md:p-10">
-          <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium text-white">
-            <span className="relative flex size-2" aria-hidden="true">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-70 motion-reduce:animate-none" />
-              <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
-            </span>
-            Piura · Lambayeque
-          </p>
-          <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight [text-shadow:0_2px_24px_rgba(0,0,0,0.35)] md:text-6xl">Acopia con precio justo.</h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-white/85 md:text-lg">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <LinkBtn href="/login" className="min-h-11 rounded-xl bg-emerald-500 px-6 text-white shadow-[0_1px_0_rgba(255,255,255,0.3)_inset,0_8px_24px_-8px_rgba(16,185,129,0.8)] hover:bg-emerald-400">Probar la demo</LinkBtn>
-            <LinkBtn href="/registro" variante="borde" className="min-h-11 rounded-xl border-white/30 bg-white/10 px-6 text-white backdrop-blur hover:border-white/50 hover:bg-white/20">Crear cuenta</LinkBtn>
-          </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 pb-40 pt-28 text-center md:pb-48">
+        <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+          <span className="relative flex size-2" aria-hidden="true">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-70 motion-reduce:animate-none" />
+            <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
+          </span>
+          Piura · Lambayeque
+        </p>
+        <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
+        <p className="mx-auto mt-5 max-w-xl text-base text-white/90 [text-shadow:0_1px_16px_rgba(0,0,0,0.5)] md:text-xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <LinkBtn href="/login" className="min-h-12 rounded-full bg-white px-7 text-zinc-900 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:bg-zinc-100">Probar la demo</LinkBtn>
+          <LinkBtn href="/registro" variante="borde" className="min-h-12 rounded-full border-white/40 bg-white/10 px-7 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20">Crear cuenta</LinkBtn>
         </div>
       </div>
 

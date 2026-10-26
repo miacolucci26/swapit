@@ -113,9 +113,9 @@ export function PageHeader({ titulo, sub, acciones }: { titulo: string; sub?: st
 }
 
 /** Bloque de pantalla: título + una línea de contexto + acción a la derecha, y el contenido debajo. */
-export function Seccion({ titulo, descripcion, acciones, children, className = "" }: { titulo: string; descripcion?: string; acciones?: React.ReactNode; children?: React.ReactNode; className?: string }) {
+export function Seccion({ id, titulo, descripcion, acciones, children, className = "" }: { id?: string; titulo: string; descripcion?: string; acciones?: React.ReactNode; children?: React.ReactNode; className?: string }) {
   return (
-    <section className={className}>
+    <section id={id} className={`scroll-mt-20 ${className}`}>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
           <h2 className="text-base font-semibold tracking-tight text-nav-900 md:text-lg">{titulo}</h2>
