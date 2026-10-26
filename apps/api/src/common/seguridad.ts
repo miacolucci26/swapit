@@ -67,7 +67,10 @@ export function middlewareCsrf(permitidos: string[]): RequestHandler {
       }
     }
     if (origen === undefined) return next();
-    const mismo = origen === `${req.protocol}://${req.headers.host}`;
+    // «Mismo origen» también detrás de la web: Vercel reenvía la petición con `X-Forwarded-Host` = dominio que el navegador visitó
+    // (con `trust proxy`, `req.hostname` lo usa). Así cualquier alias o despliegue de la web funciona, y una página ajena no pasa:
+    // su `Origin` nunca coincide con el host al que apunta la petición. Solo cuenta si TRUST_PROXY está definida.
+    const mismo = origen === `${req.protocol}://${req.headers.host}` || (req.app.get('trust proxy') && origen === `${req.protocol}://${req.hostname}`);
     if (lista.has(origen) || mismo) return next();
     responder(res, 403, 'Origen no permitido');
   };
