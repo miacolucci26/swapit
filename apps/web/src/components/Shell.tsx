@@ -89,7 +89,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 bg-zinc-950 text-white md:sticky md:top-0 md:flex md:h-screen">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 bg-[#09090b] text-white md:sticky md:top-0 md:flex md:h-screen">
         <div className="px-5 py-5"><Logo claro /></div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3" aria-label="Menú principal">
           {items.map((n) => {
@@ -99,7 +99,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 key={n.href}
                 href={n.href}
                 aria-current={activo ? "page" : undefined}
-                className={`flex min-h-10 items-center gap-3 rounded-control border-l-2 px-3 py-2 text-sm font-medium transition ${activo ? "border-emerald-400 bg-white/10 text-white shadow-[0_1px_0_rgba(255,255,255,0.06)_inset]" : "border-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}`}
+                className={`flex min-h-10 items-center gap-3 rounded-control border-l-2 px-3 py-2 text-sm font-medium transition ${activo ? "border-emerald-400 bg-white/10 text-white shadow-[0_1px_0_rgba(255,255,255,0.06)_inset]" : "border-transparent text-[#a1a1aa] hover:bg-white/5 hover:text-white"}`}
               >
                 <Icono nombre={n.icono} size={18} />
                 <span className="flex-1">{n.etiqueta}</span>
@@ -115,8 +115,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="border-t border-white/10 px-5 py-4 text-sm">
           <div className="truncate font-semibold">{user.empresa.razonSocial}</div>
-          <div className="truncate text-xs text-zinc-400">{user.nombre}</div>
-          <button onClick={logout} className="mt-2 text-xs font-medium text-zinc-400 underline-offset-2 hover:text-white hover:underline">Cerrar sesión</button>
+          <div className="truncate text-xs text-[#a1a1aa]">{user.nombre}</div>
+          <button onClick={logout} className="mt-2 text-xs font-medium text-[#a1a1aa] underline-offset-2 hover:text-white hover:underline">Cerrar sesión</button>
         </div>
       </aside>
 
