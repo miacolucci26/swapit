@@ -139,7 +139,7 @@ const ETIQUETA_COLUMNA = "mb-3 flex items-center gap-2 font-mono text-[10.5px] f
 /** Marco tipo ventana de macOS con las tres etapas conectadas: reporte → precio justo → certificado. */
 export function VistaPreviaProducto() {
   return (
-    <div className="relative mx-auto mt-12 max-w-4xl [perspective:1600px]" aria-label="Vista previa del flujo de Swapit (ilustración con datos de ejemplo)">
+    <div className="relative mx-auto max-w-4xl [perspective:1600px]" aria-label="Vista previa del flujo de Swapit (ilustración con datos de ejemplo)">
       <div aria-hidden="true" className="pointer-events-none absolute -inset-x-6 -top-8 bottom-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.16),transparent_70%)]" />
       <div className="origin-top overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_2px_4px_rgba(24,24,27,0.04),0_24px_60px_-20px_rgba(24,24,27,0.25)] backdrop-blur-xl md:[transform:rotateX(4deg)]">
         <div className="flex items-center gap-2 border-b border-zinc-200/80 bg-white/70 px-4 py-2.5">

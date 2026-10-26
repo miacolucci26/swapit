@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { CADENAS, nombreSector, residuoPorId, vidasParaMype } from "@swapit/shared";
 import PublicNav from "./PublicNav";
-import { LinkBtn, Segmented, Seccion } from "./ui";
+import { Segmented, Seccion } from "./ui";
 import { CLASE_SECTOR } from "./vis/CadenaFlujo";
 import { Icono } from "./vis/Iconos";
+import HeroDiaNoche from "./vis/HeroDiaNoche";
 import { BarraRango, MensajeWhatsApp, SUPERFICIE, TarjetaCertificado, VistaPreviaProducto } from "./vis/PremiumVisuals";
 import { RecorridoIlustrado, type ColorRecorrido, type PasoRecorrido } from "./vis/RecorridoIlustrado";
 
@@ -110,27 +111,12 @@ export default function LandingB2B() {
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <PublicNav />
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-zinc-200/80 bg-gradient-to-b from-white to-zinc-50">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(24,24,27,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(24,24,27,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
-          <div className="relative mx-auto max-w-5xl px-4 pb-14 pt-12 text-center md:pb-20 md:pt-20">
-            <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.05)] backdrop-blur">
-              <span className="relative flex size-2" aria-hidden="true">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:animate-none" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-              </span>
-              Piura · Lambayeque
-            </p>
-            <h1 className="mx-auto mt-5 max-w-3xl bg-gradient-to-b from-zinc-950 to-zinc-600 bg-clip-text text-4xl font-semibold leading-[1.05] tracking-tight text-transparent md:text-6xl">Acopia con precio justo.</h1>
-            <p className="mx-auto mt-5 max-w-xl text-base text-zinc-600 md:text-lg">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <LinkBtn href="/login" className="min-h-11 rounded-xl bg-emerald-600 px-6 shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_6px_16px_-6px_rgba(5,150,105,0.7)] hover:bg-emerald-700">Probar la demo</LinkBtn>
-              <LinkBtn href="/registro" variante="borde" className="min-h-11 rounded-xl border-zinc-200 bg-white/80 px-6 backdrop-blur hover:border-zinc-300 hover:bg-white">Crear cuenta</LinkBtn>
-            </div>
-            <VistaPreviaProducto />
-          </div>
+        <HeroDiaNoche />
+        <section className="relative z-20 -mt-16 px-4 pb-4">
+          <VistaPreviaProducto />
         </section>
 
-        <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 py-12 md:py-16">
+        <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 pb-12 pt-16 md:pb-16 md:pt-20">
           {/* Cómo funciona */}
           <Seccion titulo="Cómo funciona" descripcion="Cuatro pasos, desde el reporte del proveedor hasta el certificado.">
             <ol aria-label="Cómo funciona" className="relative grid gap-3 md:grid-cols-4">
