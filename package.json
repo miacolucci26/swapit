@@ -1,0 +1,27 @@
+{
+  "name": "swapit",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev:api": "pnpm --filter @swapit/api start:dev",
+    "dev:web": "pnpm --filter @swapit/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate": "pnpm --filter @swapit/api prisma:migrate",
+    "demo": "node scripts/demo.mjs",
+    "demo:reset": "node scripts/demo.mjs --reset",
+    "demo:b2b": "node scripts/demo.mjs --b2b",
+    "demo:b2b:reset": "node scripts/demo.mjs --b2b --reset",
+    "demo:marketplace": "node scripts/demo.mjs",
+    "demo:marketplace:reset": "node scripts/demo.mjs --reset",
+    "db:seed": "pnpm --filter @swapit/api prisma:seed",
+    "primera-carga": "pnpm --filter @swapit/api primera-carga",
+    "humo": "node scripts/humo.mjs"
+  },
+  "pnpm": {
+    "overrides": {
+      "source-map-js": ">=1.2.2",
+      "uuid": "^11.1.1"
+    }
+  }
+}

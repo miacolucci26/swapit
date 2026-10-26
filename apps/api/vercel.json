@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile --filter @swapit/api...",
+  "buildCommand": "pnpm --filter @swapit/shared build && pnpm exec prisma generate && pnpm exec nest build",
+  "outputDirectory": "public",
+  "regions": ["gru1"],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "includeFiles": "{dist/**,prisma/schema.prisma}"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+}

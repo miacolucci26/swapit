@@ -1,0 +1,589 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  // «native» = la máquina de desarrollo/CI; «rhel-openssl-3.0.x» = el entorno de Vercel (Amazon Linux 2023, Node 20+).
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  // Conexión de la aplicación (en Supabase: el pooler, puerto 6543, con ?pgbouncer=true&connection_limit=1).
+  url        = env("DATABASE_URL")
+  // Conexión directa (puerto 5432) que usa Prisma Migrate: el pooler en modo transacción no admite migraciones.
+  directUrl  = env("DIRECT_URL")
+  extensions = [postgis, vector]
+}
+
+// Las columnas geography/vector se escriben y consultan con SQL crudo ($executeRaw/$queryRaw).
+
+// B2B2B: INTERMEDIARIO (cliente que paga) y GENERADOR (proveedor de su red). OFERTANTE/RECEPTOR/AMBOS son del modo MARKETPLACE.
+enum RolEmpresa {
+  OFERTANTE
+  RECEPTOR
+  AMBOS
+  GENERADOR
+  INTERMEDIARIO
+}
+
+enum EstadoKyb {
+  PENDIENTE
+  VERIFICADA
+  RECHAZADA
+  NO_APLICA // personas naturales: no tienen RUC ni verificación KYB
+}
+
+enum TipoCuenta {
+  EMPRESA
+  PERSONA
+}
+
+enum RolUsuario {
+  EMPRESA
+  ADMIN
+}
+
+enum Modalidad {
+  VENTA
+  DONACION
+  CREDITOS
+  INTERCAMBIO
+}
+
+enum EstadoLote {
+  BORRADOR
+  PUBLICADO
+  RESERVADO
+  CERRADO
+  RETIRADO
+  // Ciclo B2B2B: lo reporta un proveedor y el intermediario lo cotiza, acopia y despacha.
+  REPORTADO
+  COTIZADO
+  ACOPIADO
+  DESPACHADO
+  RECHAZADO
+}
+
+enum FrecuenciaLote {
+  UNICO
+  RECURRENTE
+  ESTACIONAL
+}
+
+enum EstadoTransaccion {
+  SOLICITADO
+  EN_NEGOCIACION
+  ACORDADO
+  PAGO_RETENIDO
+  RECOJO_CONFIRMADO
+  ENTREGADO
+  CALIFICADO
+  CERRADO
+  CANCELADO
+}
+
+enum PagoEstado {
+  NO_APLICA
+  PENDIENTE
+  RETENIDO
+  LIBERADO
+  REEMBOLSADO
+}
+
+enum TipoCredito {
+  GANADO_DONACION
+  GANADO_CANJE
+  GASTADO_COMISION
+  GASTADO_CANJE
+  CANJE_BENEFICIO
+  AJUSTE
+}
+
+enum EstadoIncidencia {
+  ABIERTA
+  EN_REVISION
+  RESUELTA
+}
+
+// «Empresa» es la cuenta que publica y transa (lotes, transacciones, créditos, calificaciones, alertas).
+// Representa a una empresa (tipo EMPRESA: RUC, rubro, KYB) o a una persona natural (tipo PERSONA: sin RUC ni KYB).
+// Un solo modelo evita duplicar cada relación y la lógica de negocio; la coherencia de los campos la garantiza el
+// CHECK «Empresa_tipo_check» de la migración 0004 (Prisma no puede expresarlo en el schema).
+model Empresa {
+  id                 String                                @id @default(cuid())
+  tipo               TipoCuenta                            @default(EMPRESA)
+  ruc                String?                               @unique
+  razonSocial        String // empresa: razón social · persona: nombre público («Ana T.»)
+  ciiu               String?
+  rol                RolEmpresa
+  direccion          String
+  ubicacion          Unsupported("geography(Point,4326)")?
+  estadoKyb          EstadoKyb                             @default(PENDIENTE)
+  // Cómo se decidió estadoKyb: SIMULADA (mock de desarrollo), MANUAL (revisión de un administrador) o API (proveedor SUNAT). Null = aún sin decidir.
+  metodoKyb          String?
+  kybRevisadoAt      DateTime?
+  // Cuenta sembrada con datos de demostración (no es una empresa real). Se puede ocultar con OCULTAR_DEMO=1.
+  esDemo             Boolean                               @default(false)
+  representanteLegal String?
+  badgeCircular      Boolean                               @default(false)
+  // Solo empresas: oculta nombre y ubicación exacta hasta que el ofertante responde una solicitud.
+  confidencial       Boolean                               @default(false)
+  // B2B2B. Un GENERADOR (proveedor) pertenece a un intermediario y no tiene usuario: reporta por enlace o WhatsApp.
+  intermediarioId    String?
+  activo             Boolean                               @default(true)
+  tokenCaptacion     String?                               @unique
+  contactoNombre     String?
+  telefono           String?
+  contactoEmail      String?
+  notasInternas      String?
+  logoUrl            String?
+  colorMarca         String?
+  // Clasificación del proveedor en la red (ver packages/shared/src/sectores.ts).
+  sector             String?
+  tipoActor          String?
+  // El intermediario decide si sus precios observados alimentan el pool compartido (anónimo). Por defecto no.
+  whatsappPhoneId    String?                               @unique
+  compartirPrecios   Boolean                               @default(false)
+  ratingProm         Float                                 @default(0)
+  nTransacciones     Int                                   @default(0)
+  createdAt          DateTime                              @default(now())
+
+  intermediario               Empresa?               @relation("Red", fields: [intermediarioId], references: [id])
+  red                         Empresa[]              @relation("Red")
+  usuarios                    Usuario[]
+  certificaciones             EmpresaCertificacion[]
+  lotes                       Lote[]
+  alertas                     AlertaBusqueda[]
+  preciosObservados           PrecioObservado[]
+  destinos                    Destino[]
+  acuerdosComoIntermediario   Acuerdo[]              @relation("AcuerdoIntermediario")
+  acuerdosComoProveedor       Acuerdo[]              @relation("AcuerdoProveedor")
+  suscripciones               Suscripcion[]
+  conversacionesWhatsapp      ConversacionWhatsapp[] @relation("ConvIntermediario")
+  conversacionesComoProveedor ConversacionWhatsapp[] @relation("ConvProveedor")
+  mensajesWhatsapp            MensajeWhatsapp[]
+  cobros                      CobroFee[]
+  certificadosEmitidos        Certificado[]          @relation("CertificadoIntermediario")
+  certificadosComoGenerador   Certificado[]          @relation("CertificadoGenerador")
+  creditos                    CreditoMovimiento[]
+  comoOfertante               Transaccion[]          @relation("Ofertante")
+  comoReceptor                Transaccion[]          @relation("Receptor")
+  calificacionesHechas        Calificacion[]         @relation("Autor")
+  calificacionesRecibidas     Calificacion[]         @relation("Destinatario")
+}
+
+model Usuario {
+  id           String     @id @default(cuid())
+  empresaId    String
+  email        String     @unique
+  passwordHash String
+  nombre       String
+  rol          RolUsuario @default(EMPRESA)
+  createdAt    DateTime   @default(now())
+
+  empresa     Empresa       @relation(fields: [empresaId], references: [id])
+  mensajes    MensajeChat[]
+  incidencias Incidencia[]
+}
+
+model EmpresaCertificacion {
+  id         String   @id @default(cuid())
+  empresaId  String
+  nombre     String // ISO 14001, BPA, etc.
+  archivoUrl String?
+  createdAt  DateTime @default(now())
+  empresa    Empresa  @relation(fields: [empresaId], references: [id])
+}
+
+model CategoriaResiduo {
+  id                   String  @id @default(cuid())
+  codigo               String  @unique // clave en FACTORES_IMPACTO
+  nombre               String
+  codigoLer            String?
+  sector               String
+  usoTipico            String?
+  factorCo2PorTon      Float // kg CO2eq evitados por tonelada — PLACEHOLDER no validado
+  factorCreditosPorTon Float
+  familia              String? // agrupa subtipos: PLASTICO_PET y PLASTICO_PEAD son de la familia PLASTICO
+  unidadBase           String  @default("ton") // unidad por defecto al publicar: ton | kg | und
+  kgPorUnidad          Float? // peso promedio de una unidad (para convertir «und» a toneladas) — PLACEHOLDER
+
+  lotes             Lote[]
+  alertas           AlertaBusqueda[]
+  preciosObservados PrecioObservado[]
+}
+
+enum CondicionLote {
+  NUEVO
+  COMO_NUEVO
+  BUEN_ESTADO
+  USO_VISIBLE
+  PARA_REPARAR
+}
+
+enum EntregaLote {
+  RECOJO_RECEPTOR
+  PUNTO_ENCUENTRO
+  ENVIO_OFERTANTE
+}
+
+model Lote {
+  id                 String                                @id @default(cuid())
+  empresaId          String
+  categoriaId        String
+  titulo             String
+  descripcion        String
+  keywords           String[]
+  cantidad           Float
+  unidad             String                                @default("ton")
+  cantidadDisponible Float
+  modalidad          Modalidad
+  precioReferencia   Float?
+  precio             Float?
+  aceptaCreditos     Boolean                               @default(false)
+  frecuencia         FrecuenciaLote                        @default(UNICO)
+  // Solo aplica a modalidad INTERCAMBIO: qué categorías/ítems aceptaría el publicador a cambio.
+  notaIntercambio    String?
+  condicion          CondicionLote?
+  // B2B2B: lo que pide el proveedor, lo que ofrece el intermediario y lo que finalmente se pagó (por unidad del lote).
+  precioEsperado     Float?
+  precioOfrecido     Float?
+  precioFinal        Float?
+  cantidadAcopiada   Float?
+  posicionPrecio     String? // DEBAJO | DENTRO | ENCIMA del rango de referencia
+  reportadoVia       String? // PORTAL | WHATSAPP | INTERMEDIARIO
+  clienteDestino     String?
+  clienteDestinoRuc  String?
+  // Residuo de la base de cadenas (packages/shared/src/cadenas-datos.ts), cómo viene el material, a qué destino fue y de qué acuerdo salió.
+  residuoRef         String?
+  presentacion       String?
+  destinoId          String?
+  acuerdoId          String?
+  acopiadoAt         DateTime?
+  despachadoAt       DateTime?
+  entrega            EntregaLote                           @default(RECOJO_RECEPTOR)
+  ubicacion          Unsupported("geography(Point,4326)")?
+  embedding          Unsupported("vector(1536)")?
+  iaSugerencia       Json?
+  estado             EstadoLote                            @default(BORRADOR)
+  destacadoHasta     DateTime?
+  createdAt          DateTime                              @default(now())
+
+  empresa                Empresa          @relation(fields: [empresaId], references: [id])
+  categoria              CategoriaResiduo @relation(fields: [categoriaId], references: [id])
+  imagenes               LoteImagen[]
+  transacciones          Transaccion[]
+  ofrecidoEnIntercambios Transaccion[]    @relation("LoteIntercambio")
+  matches                Match[]
+  certificado            Certificado?
+  destino                Destino?         @relation(fields: [destinoId], references: [id], onDelete: SetNull)
+  acuerdo                Acuerdo?         @relation(fields: [acuerdoId], references: [id], onDelete: SetNull)
+
+  @@index([estado, categoriaId])
+  @@index([destinoId])
+  @@index([acuerdoId])
+}
+
+model LoteImagen {
+  id     String @id @default(cuid())
+  loteId String
+  url    String
+  orden  Int    @default(0)
+  lote   Lote   @relation(fields: [loteId], references: [id], onDelete: Cascade)
+}
+
+model Transaccion {
+  id                String            @id @default(cuid())
+  loteId            String
+  ofertanteId       String
+  receptorId        String
+  modalidad         Modalidad
+  cantidad          Float
+  precioAcordado    Float?
+  comision          Float             @default(0)
+  distanciaKm       Float?
+  fleteEstimado     Float?
+  estado            EstadoTransaccion @default(SOLICITADO)
+  // true cuando el ofertante responde: desde ahí las partes se ven con su identidad completa.
+  identidadRevelada Boolean           @default(false)
+  pagoEstado        PagoEstado        @default(NO_APLICA)
+  contratoJson      Json?
+  fechaRecojo       DateTime?
+  responsableRecojo String?
+  firmaOfertanteAt  DateTime?
+  firmaReceptorAt   DateTime?
+  fotoEntregaUrl    String?
+  // Solo aplica a modalidad INTERCAMBIO: el lote que el receptor ofrece a cambio del lote solicitado.
+  loteIntercambioId String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  lote            Lote                @relation(fields: [loteId], references: [id])
+  loteIntercambio Lote?               @relation("LoteIntercambio", fields: [loteIntercambioId], references: [id])
+  ofertante       Empresa             @relation("Ofertante", fields: [ofertanteId], references: [id])
+  receptor        Empresa             @relation("Receptor", fields: [receptorId], references: [id])
+  mensajes        MensajeChat[]
+  certificado     Certificado?
+  calificaciones  Calificacion[]
+  incidencias     Incidencia[]
+  creditos        CreditoMovimiento[]
+
+  @@index([estado])
+}
+
+model MensajeChat {
+  id            String      @id @default(cuid())
+  transaccionId String
+  autorId       String
+  texto         String
+  createdAt     DateTime    @default(now())
+  transaccion   Transaccion @relation(fields: [transaccionId], references: [id], onDelete: Cascade)
+  autor         Usuario     @relation(fields: [autorId], references: [id])
+
+  @@index([transaccionId, createdAt])
+}
+
+// Ledger append-only: el balance es SUM(monto), nunca un campo mutable.
+model CreditoMovimiento {
+  id                String       @id @default(cuid())
+  empresaId         String
+  transaccionId     String?
+  tipo              TipoCredito
+  monto             Float // con signo
+  descripcion       String?
+  claveIdempotencia String       @unique
+  createdAt         DateTime     @default(now())
+  empresa           Empresa      @relation(fields: [empresaId], references: [id])
+  transaccion       Transaccion? @relation(fields: [transaccionId], references: [id])
+
+  @@index([empresaId, createdAt])
+}
+
+model Certificado {
+  id                String       @id @default(cuid())
+  // Modo marketplace: nace de una transacción. Modo B2B2B: de un lote despachado, emitido por el intermediario.
+  transaccionId     String?      @unique
+  intermediarioId   String?
+  loteId            String?      @unique
+  generadorId       String?
+  clienteNombre     String?
+  clienteRuc        String?
+  cantidad          Float?
+  unidad            String?
+  codigo            String       @unique
+  hashSha256        String
+  pdfUrl            String?
+  usoFinalDeclarado String
+  ton               Float
+  co2Evitado        Float
+  createdAt         DateTime     @default(now())
+  transaccion       Transaccion? @relation(fields: [transaccionId], references: [id])
+  intermediario     Empresa?     @relation("CertificadoIntermediario", fields: [intermediarioId], references: [id])
+  generador         Empresa?     @relation("CertificadoGenerador", fields: [generadorId], references: [id])
+  lote              Lote?        @relation(fields: [loteId], references: [id])
+  cobro             CobroFee?
+}
+
+model Calificacion {
+  id             String      @id @default(cuid())
+  transaccionId  String
+  autorId        String
+  destinatarioId String
+  estrellas      Int
+  comentario     String?
+  createdAt      DateTime    @default(now())
+  transaccion    Transaccion @relation(fields: [transaccionId], references: [id])
+  autor          Empresa     @relation("Autor", fields: [autorId], references: [id])
+  destinatario   Empresa     @relation("Destinatario", fields: [destinatarioId], references: [id])
+
+  @@unique([transaccionId, autorId])
+}
+
+model AlertaBusqueda {
+  id          String                                @id @default(cuid())
+  empresaId   String
+  texto       String
+  categoriaId String?
+  centro      Unsupported("geography(Point,4326)")?
+  radioKm     Float                                 @default(50)
+  embedding   Unsupported("vector(1536)")?
+  activa      Boolean                               @default(true)
+  createdAt   DateTime                              @default(now())
+  empresa     Empresa                               @relation(fields: [empresaId], references: [id])
+  categoria   CategoriaResiduo?                     @relation(fields: [categoriaId], references: [id])
+  matches     Match[]
+}
+
+model Match {
+  id          String         @id @default(cuid())
+  alertaId    String
+  loteId      String
+  score       Float
+  explicacion String?
+  notificado  Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  alerta      AlertaBusqueda @relation(fields: [alertaId], references: [id], onDelete: Cascade)
+  lote        Lote           @relation(fields: [loteId], references: [id], onDelete: Cascade)
+
+  @@unique([alertaId, loteId])
+}
+
+model Incidencia {
+  id            String           @id @default(cuid())
+  transaccionId String
+  reportadaPor  String
+  tipo          String
+  detalle       String
+  estado        EstadoIncidencia @default(ABIERTA)
+  createdAt     DateTime         @default(now())
+  transaccion   Transaccion      @relation(fields: [transaccionId], references: [id])
+  usuario       Usuario          @relation(fields: [reportadaPor], references: [id])
+}
+
+model ConfigPlataforma {
+  id                Int   @id @default(1)
+  comisionVentaPct  Float @default(6)
+  feeDonacion       Float @default(15)
+  feeIntercambio    Float @default(10)
+  tarifaFleteKmTon  Float @default(0.6)
+  // Precios del SaaS (B2B2B): PLACEHOLDERS editables, decisión comercial pendiente.
+  feeCertificado    Float @default(5)
+  precioPlanMensual Float @default(199)
+}
+
+// Precio observado por tonelada de una categoría (real o de ejemplo): la base del benchmark de precios.
+model PrecioObservado {
+  id              String                                @id @default(cuid())
+  categoriaId     String
+  precioPorTon    Float
+  cantidadTon     Float
+  fecha           DateTime
+  fuente          String // SEMILLA | ACOPIO | CSV
+  intermediarioId String?
+  descripcion     String?
+  ubicacion       Unsupported("geography(Point,4326)")?
+  embedding       Unsupported("vector(1536)")?
+  createdAt       DateTime                              @default(now())
+  categoria       CategoriaResiduo                      @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  intermediario   Empresa?                              @relation(fields: [intermediarioId], references: [id], onDelete: Cascade)
+
+  @@index([categoriaId])
+  @@index([intermediarioId])
+}
+
+// Suscripción mensual de un intermediario al SaaS. A lo sumo una ACTIVA por intermediario (índice único parcial en la migración 0009).
+model Suscripcion {
+  id             String   @id @default(cuid())
+  empresaId      String
+  plan           String
+  estado         String // ACTIVA | CANCELADA
+  montoMensual   Float
+  periodoInicio  DateTime
+  periodoFin     DateTime
+  referenciaPago String?
+  createdAt      DateTime @default(now())
+  empresa        Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId])
+}
+
+// Fee por certificado emitido (el SaaS no cobra comisión de transacción).
+model CobroFee {
+  id             String       @id @default(cuid())
+  empresaId      String
+  concepto       String // CERTIFICADO
+  certificadoId  String?      @unique
+  monto          Float
+  estado         String // PENDIENTE | COBRADO | FALLIDO
+  referenciaPago String?
+  createdAt      DateTime     @default(now())
+  empresa        Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  certificado    Certificado? @relation(fields: [certificadoId], references: [id])
+
+  @@index([empresaId, createdAt])
+}
+
+// Conversación guiada de WhatsApp con un proveedor: material → cantidad → precio → confirmación.
+model ConversacionWhatsapp {
+  id              String   @id @default(cuid())
+  intermediarioId String
+  telefono        String
+  proveedorId     String
+  paso            String // INICIO | DESCRIPCION | CANTIDAD | PRECIO | CONFIRMAR
+  borrador        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  intermediario   Empresa  @relation("ConvIntermediario", fields: [intermediarioId], references: [id], onDelete: Cascade)
+  proveedor       Empresa  @relation("ConvProveedor", fields: [proveedorId], references: [id], onDelete: Cascade)
+
+  @@unique([intermediarioId, telefono])
+}
+
+model MensajeWhatsapp {
+  id              String   @id @default(cuid())
+  intermediarioId String
+  telefono        String
+  direccion       String // ENTRANTE | SALIENTE
+  texto           String
+  createdAt       DateTime @default(now())
+  intermediario   Empresa  @relation(fields: [intermediarioId], references: [id], onDelete: Cascade)
+
+  @@index([intermediarioId, telefono, createdAt])
+}
+
+/// A quién entrega o vende el intermediario cada tipo de residuo (su directorio de compradores).
+model Destino {
+  id              String   @id @default(cuid())
+  intermediarioId String
+  nombre          String
+  tipo            String // TipoDestino (packages/shared/src/sectores.ts)
+  materiales      String?
+  zona            String?
+  contactoNombre  String?
+  telefono        String?
+  notas           String?
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  intermediario Empresa   @relation(fields: [intermediarioId], references: [id], onDelete: Cascade)
+  lotes         Lote[]
+  acuerdos      Acuerdo[]
+
+  @@index([intermediarioId])
+}
+
+/// Trato de temporada con un proveedor: precio y fecha de recojo pactados antes de la campaña, con recojos que van saldándolo.
+model Acuerdo {
+  id               String    @id @default(cuid())
+  intermediarioId  String
+  proveedorId      String
+  destinoId        String?
+  residuoRef       String?
+  descripcion      String
+  cantidadEstimada Float
+  unidad           String    @default("kg")
+  precioPactado    Float
+  fechaRecojo      DateTime?
+  estado           String    @default("VIGENTE") // VIGENTE | CUMPLIDO | CANCELADO
+  notas            String?
+  createdAt        DateTime  @default(now())
+
+  intermediario Empresa  @relation("AcuerdoIntermediario", fields: [intermediarioId], references: [id], onDelete: Cascade)
+  proveedor     Empresa  @relation("AcuerdoProveedor", fields: [proveedorId], references: [id])
+  destino       Destino? @relation(fields: [destinoId], references: [id], onDelete: SetNull)
+  lotes         Lote[]
+
+  @@index([intermediarioId, estado])
+}
+
+/// Registro simple de acciones de administración (p. ej. verificar manualmente a una empresa).
+model AuditoriaAdmin {
+  id         String   @id @default(cuid())
+  usuarioId  String
+  accion     String
+  entidad    String
+  entidadId  String
+  detalle    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entidad, entidadId])
+}

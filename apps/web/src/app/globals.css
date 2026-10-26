@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/*
+ * Swapit — diseño EJECUTIVO (docs/diseno/BRIEF-EJECUTIVO.md).
+ * Neutros slate (ink, line, bg, surface-2) · navy (nav) = estructura · verde (pri) = acción y lo positivo · ámbar = SOLO atención · rojo = error.
+ * Las categorías de material se indican con un punto (cat-*) + texto, no con tarjetas de color.
+ *
+ * Contrastes WCAG (calculados):
+ *   blanco sobre pri-600 6.45:1 · blanco sobre pri-700 8.64:1 · pri-700 sobre pri-50 7.72:1
+ *   blanco sobre nav-900 16.0:1 · nav-200 sobre nav-900 9.3:1 · blanco sobre nav-700 11.4:1 · nav-200 sobre nav-700 6.6:1
+ *   ink-900 sobre bg 16.6:1 · ink-700 sobre blanco 10.3:1 · ink-500 sobre blanco 5.9:1, sobre bg 5.5:1, sobre surface-2 5.3:1
+ *   ambar-700 sobre ambar-50 5.6:1 · ambar-800 sobre ambar-100 7.2:1 · error sobre blanco 6.6:1 · error-ink sobre error-tint 7.8:1
+ */
+:root {
+  color-scheme: light;
+  --background: #f5f7fa;
+  --foreground: #0f172a;
+}
+
+@theme {
+  /* Neutros slate */
+  --color-ink-900: #0f172a;
+  --color-ink-700: #334155;
+  --color-ink-500: #56667d;
+  --color-ink-400: #64748b; /* 4.8:1 sobre blanco: solo para texto auxiliar */
+  --color-ink-300: #cbd5e1; /* bordes de controles */
+  --color-ink-200: #e2e8f0;
+  --color-ink-100: #e8edf3;
+  --color-line: #e2e8f0;
+  --color-bg: #f5f7fa;
+  --color-surface-2: #f1f5f9;
+  --color-cream: #f5f7fa; /* heredado: ya no hay crema */
+
+  /* Navy: estructura (barra lateral, encabezados, enlaces) */
+  --color-nav-50: #eef2f8;
+  --color-nav-100: #dce4f0;
+  --color-nav-200: #b8c6de;
+  --color-nav-300: #8ea3c6;
+  --color-nav-400: #627da8;
+  --color-nav-500: #41608e;
+  --color-nav-600: #2d4a78;
+  --color-nav-700: #1f3a64;
+  --color-nav-800: #162c4d;
+  --color-nav-900: #0f2140;
+  --color-nav-950: #0a172e;
+
+  /* Verde: acción primaria (pri-600) y lo positivo */
+  --color-pri-50: #e8f5f1;
+  --color-pri-100: #c8e7df;
+  --color-pri-200: #9ed3c6;
+  --color-pri-300: #6bb8a6;
+  --color-pri-400: #3a9984;
+  --color-pri-500: #1a7f6a;
+  --color-pri-600: #0b6b57;
+  --color-pri-700: #085646;
+  --color-pri-800: #064437;
+  --color-pri-900: #05352b;
+
+  /* Ámbar: SOLO atención / pendiente */
+  --color-ambar-50: #fff7e6;
+  --color-ambar-100: #fdebc0;
+  --color-ambar-200: #fad98a;
+  --color-ambar-300: #f4c152;
+  --color-ambar-400: #e8a720;
+  --color-ambar-500: #c98a0b;
+  --color-ambar-600: #a56e06;
+  --color-ambar-700: #8a5a00;
+  --color-ambar-800: #6b4500;
+
+  /* Error */
+  --color-error: #b42318;
+  --color-error-tint: #fef0ee;
+  --color-error-ink: #912018;
+
+  /* Puntos de categoría de material (círculo de 8 px + texto) */
+  --color-cat-agro: #4c9a52;
+  --color-cat-pesca: #2f86a6;
+  --color-cat-textil: #b8578f;
+  --color-cat-plastico: #7a5fc0;
+  --color-cat-otros: #a47b4b;
+
+  /*
+   * Alias heredados (pantallas aún sin migrar). Apuntan a la paleta ejecutiva; se eliminarán cuando ya no se usen.
+   * exito/alerta/info → pri/ámbar/nav; agro/pesca/... → tintes discretos de las categorías.
+   */
+  --color-exito: var(--color-pri-600);
+  --color-exito-tint: var(--color-pri-50);
+  --color-exito-ink: var(--color-pri-800);
+  --color-alerta: var(--color-ambar-400);
+  --color-alerta-tint: var(--color-ambar-50);
+  --color-alerta-ink: var(--color-ambar-700);
+  --color-peligro: var(--color-error);
+  --color-info: var(--color-nav-600);
+  --color-info-tint: var(--color-nav-50);
+  --color-info-ink: var(--color-nav-800);
+  --color-agro: var(--color-cat-agro);
+  --color-agro-tint: #eef6ee;
+  --color-agro-ink: #2f6b34;
+  --color-pesca: var(--color-cat-pesca);
+  --color-pesca-tint: #e9f3f7;
+  --color-pesca-ink: #1d5a73;
+  --color-textil: var(--color-cat-textil);
+  --color-textil-tint: #f8eaf2;
+  --color-textil-ink: #85396a;
+  --color-plastico: var(--color-cat-plastico);
+  --color-plastico-tint: #f0ecf8;
+  --color-plastico-ink: #51408a;
+  --color-otros: var(--color-cat-otros);
+  --color-otros-tint: #f4eee6;
+  --color-otros-ink: #6d5030;
+
+  /* Paletas «emerald» y «stone» de Tailwind usadas por pantallas heredadas: apuntan a pri e ink. */
+  --color-emerald-50: var(--color-pri-50);
+  --color-emerald-100: var(--color-pri-100);
+  --color-emerald-200: var(--color-pri-200);
+  --color-emerald-300: var(--color-pri-300);
+  --color-emerald-400: var(--color-pri-400);
+  --color-emerald-500: var(--color-pri-500);
+  --color-emerald-600: var(--color-pri-600);
+  --color-emerald-700: var(--color-pri-700);
+  --color-emerald-800: var(--color-pri-800);
+  --color-emerald-900: var(--color-pri-900);
+  --color-stone-50: #f8fafc;
+  --color-stone-100: var(--color-ink-100);
+  --color-stone-200: var(--color-ink-200);
+  --color-stone-300: var(--color-ink-300);
+  --color-stone-400: var(--color-ink-400);
+  --color-stone-500: var(--color-ink-500);
+  --color-stone-600: #46556b;
+  --color-stone-700: var(--color-ink-700);
+  --color-stone-800: #1e293b;
+  --color-stone-900: var(--color-ink-900);
+
+  /* Tipografía: Inter para todo (variable de next/font en layout.tsx) */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter), system-ui, sans-serif; /* heredado: equivale a font-sans */
+
+  /* Forma: radios de 8–10 px y sombra casi nula */
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  font-feature-settings: "cv11", "ss03";
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.01em;
+}
+
+/* Cifras alineadas en precios, kilos y KPI. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco visible en todo control interactivo. */
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--color-nav-600);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-test
+.next
+.env
+.env.local
+/apps/api/uploads/
+*.log
+.turbo
+
+.pnpm-store
+
+# base de datos embebida de desarrollo y archivos subidos
+apps/api/.pgdata
+apps/api/uploads
