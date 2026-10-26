@@ -15,7 +15,7 @@ type Tipo = "PERSONA" | "EMPRESA";
 /** Cabecera sobria con logo y título, común a los dos registros. */
 function Cabecera() {
   return (
-    <header className="border-b border-line bg-white">
+    <header className="border-b border-zinc-200/70 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-5xl items-center px-4 py-2"><Logo /></div>
     </header>
   );
@@ -24,7 +24,7 @@ function Cabecera() {
 function Titulo({ titulo, sub }: { titulo: string; sub?: string }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-nav-900">{titulo}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">{titulo}</h1>
       {sub && <p className="mt-1 text-sm text-ink-500">{sub}</p>}
     </div>
   );
@@ -84,11 +84,11 @@ function RegistroIntermediario() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-zinc-50">
       <Cabecera />
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 px-4 py-8">
         <Titulo titulo="Crea tu cuenta" sub="Tus proveedores no se registran: tú los das de alta." />
-        <form onSubmit={onSubmit} aria-describedby={errores.length ? ID_ERRORES : undefined} className="flex flex-col gap-5 rounded-card border border-line bg-white p-5 shadow-card">
+        <form onSubmit={onSubmit} aria-describedby={errores.length ? ID_ERRORES : undefined} className="flex flex-col gap-5 rounded-2xl border border-zinc-200/80 bg-white/80 p-5 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_16px_40px_-16px_rgba(24,24,27,0.18)] backdrop-blur-xl">
           <Seccion icono="empresa" titulo="Tu empresa">
             <Field label="RUC"><input name="ruc" required inputMode="numeric" maxLength={11} placeholder="11 dígitos" className={inputCls} /></Field>
             <Field label="Razón social"><input name="razonSocial" required className={inputCls} /></Field>
@@ -154,12 +154,12 @@ function RegistroMarketplace() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-zinc-50">
       <Cabecera />
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 px-4 py-8">
         <Titulo titulo="Registra tu empresa" sub="Intercambia excedentes con otras empresas del norte." />
         {tipo && (
-          <form key={tipo} onSubmit={onSubmit} aria-describedby={errores.length ? ID_ERRORES : undefined} className="flex flex-col gap-5 rounded-card border border-line bg-white p-5 shadow-card">
+          <form key={tipo} onSubmit={onSubmit} aria-describedby={errores.length ? ID_ERRORES : undefined} className="flex flex-col gap-5 rounded-2xl border border-zinc-200/80 bg-white/80 p-5 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_16px_40px_-16px_rgba(24,24,27,0.18)] backdrop-blur-xl">
             {tipo === "EMPRESA" ? (
               <Seccion icono="empresa" titulo="Tu empresa">
                 <Field label="RUC"><input name="ruc" required inputMode="numeric" maxLength={11} placeholder="11 dígitos" className={inputCls} /></Field>

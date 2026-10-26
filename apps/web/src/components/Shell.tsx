@@ -88,7 +88,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="hidden w-60 shrink-0 flex-col bg-nav-900 text-white md:sticky md:top-0 md:flex md:h-screen">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 bg-zinc-950 text-white md:sticky md:top-0 md:flex md:h-screen">
         <div className="px-5 py-5"><Logo claro /></div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3" aria-label="Menú principal">
           {items.map((n) => {
@@ -98,7 +98,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 key={n.href}
                 href={n.href}
                 aria-current={activo ? "page" : undefined}
-                className={`flex min-h-10 items-center gap-3 rounded-control border-l-2 px-3 py-2 text-sm font-medium transition ${activo ? "border-pri-400 bg-nav-700 text-white" : "border-transparent text-nav-200 hover:bg-nav-800 hover:text-white"}`}
+                className={`flex min-h-10 items-center gap-3 rounded-control border-l-2 px-3 py-2 text-sm font-medium transition ${activo ? "border-emerald-400 bg-white/10 text-white shadow-[0_1px_0_rgba(255,255,255,0.06)_inset]" : "border-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}`}
               >
                 <Icono nombre={n.icono} size={18} />
                 <span className="flex-1">{n.etiqueta}</span>
@@ -112,7 +112,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </Link>
           )}
         </nav>
-        <div className="border-t border-nav-800 px-5 py-4 text-sm">
+        <div className="border-t border-white/10 px-5 py-4 text-sm">
           <div className="truncate font-semibold">{user.empresa.razonSocial}</div>
           <div className="truncate text-xs text-nav-200">{user.nombre}</div>
           <button onClick={logout} className="mt-2 text-xs font-medium text-nav-200 underline-offset-2 hover:text-white hover:underline">Cerrar sesión</button>
@@ -121,7 +121,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Cabecera de escritorio con migas */}
-        <header className="sticky top-0 z-30 hidden h-14 items-center justify-between gap-4 border-b border-line bg-white px-6 md:flex lg:px-8">
+        <header className="sticky top-0 z-30 hidden h-14 items-center justify-between gap-4 border-b border-zinc-200/70 bg-white/70 px-6 backdrop-blur-xl md:flex lg:px-8">
           <nav aria-label="Migas" className="flex min-w-0 items-center gap-2 text-sm text-ink-500">
             <span className="truncate">{user.empresa.razonSocial}</span>
             {seccion && (
@@ -141,7 +141,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Cabecera móvil */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-white px-4 md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200/70 bg-white/70 px-4 backdrop-blur-xl md:hidden">
           <Logo tamano={28} />
           <button onClick={logout} className="min-h-10 rounded-control px-2 text-sm font-medium text-nav-700">Salir</button>
         </header>
@@ -165,7 +165,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-line bg-white px-1 pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Menú principal">
+      <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-zinc-200/70 bg-white/80 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden" aria-label="Menú principal">
         {principales.map((n) => {
           const activo = estaActivo(n.href);
           return (

@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { CADENAS, nombreSector, residuoPorId, vidasParaMype } from "@swapit/shared";
 import PublicNav from "./PublicNav";
-import { LinkBtn, Seccion, Tabs } from "./ui";
+import { LinkBtn, Segmented, Seccion } from "./ui";
 import { CLASE_SECTOR } from "./vis/CadenaFlujo";
 import { Icono } from "./vis/Iconos";
+import { BarraRango, MensajeWhatsApp, SUPERFICIE, TarjetaCertificado, VistaPreviaProducto } from "./vis/PremiumVisuals";
 import { RecorridoIlustrado, type ColorRecorrido, type PasoRecorrido } from "./vis/RecorridoIlustrado";
 
 const CICLO = [
@@ -66,11 +67,36 @@ const RECORRIDOS: Recorrido[] = [
 /** Cadenas destacadas (todas existen en la base de aprovechamiento). */
 const IDS_CADENAS = ["mango", "limon", "arroz", "concha-abanico", "algodon-textil", "empaques-y-apoyo"];
 
-const BENEFICIOS = [
-  { cifra: "0", titulo: "Reportes por WhatsApp", linea: "Cuentas que crear a tus proveedores." },
-  { cifra: "▼ ● ▲", titulo: "Precio de referencia", linea: "Sabes si tu oferta es justa." },
-  { cifra: "QR", titulo: "Certificado con tu logo", linea: "Tu cliente lo verifica en segundos." },
-];
+/** Bento: cada tarjeta muestra la función con una ilustración en CSS/SVG. */
+const BENTO = [
+  { titulo: "Reportes por WhatsApp", linea: "0 cuentas que crear a tus proveedores.", escena: "whatsapp" },
+  { titulo: "Precio de referencia", linea: "Sabes si tu oferta es justa.", escena: "rango" },
+  { titulo: "Certificado con tu logo", linea: "Tu cliente lo verifica en segundos.", escena: "certificado" },
+] as const;
+
+function EscenaBento({ escena }: { escena: (typeof BENTO)[number]["escena"] }) {
+  if (escena === "whatsapp") return <MensajeWhatsApp compacto />;
+  if (escena === "rango") {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-zinc-900">S/ 4,50<span className="ml-1 text-xs font-normal text-zinc-500">/ kg</span></p>
+        <BarraRango />
+      </div>
+    );
+  }
+  return <TarjetaCertificado />;
+}
+
+/** Sector → color del borde al pasar el cursor (clases literales para que Tailwind las incluya). */
+const HOVER_SECTOR: Record<string, string> = {
+  AGRO: "hover:border-emerald-400/70 hover:shadow-[0_8px_30px_-12px_rgba(16,185,129,0.45)]",
+  AGROINDUSTRIA: "hover:border-emerald-400/70 hover:shadow-[0_8px_30px_-12px_rgba(16,185,129,0.45)]",
+  PESCA: "hover:border-sky-400/70 hover:shadow-[0_8px_30px_-12px_rgba(14,165,233,0.45)]",
+  TEXTIL: "hover:border-fuchsia-400/70 hover:shadow-[0_8px_30px_-12px_rgba(192,38,211,0.35)]",
+  MANUFACTURA: "hover:border-amber-400/70 hover:shadow-[0_8px_30px_-12px_rgba(245,158,11,0.40)]",
+  SERVICIOS: "hover:border-indigo-400/70 hover:shadow-[0_8px_30px_-12px_rgba(99,102,241,0.40)]",
+  OTRO: "hover:border-zinc-400/80 hover:shadow-[0_8px_30px_-12px_rgba(24,24,27,0.30)]",
+};
 
 const GARANTIAS = ["Tus clientes son solo tuyos", "Sin comisión por operación", "Tus precios no se comparten"];
 
@@ -81,31 +107,40 @@ export default function LandingB2B() {
   const cadenas = IDS_CADENAS.map((id) => CADENAS.find((c) => c.id === id)).filter((c) => c !== undefined);
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-zinc-50">
       <PublicNav />
       <main className="flex-1">
-        <section className="border-b border-line bg-white">
-          <div className="mx-auto max-w-5xl px-4 py-10 md:py-14">
-            <p className="text-sm font-medium text-pri-700">Piura · Lambayeque</p>
-            <h1 className="mt-2 max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-nav-900 md:text-[40px]">Acopia con precio justo.</h1>
-            <p className="mt-3 max-w-xl text-base text-ink-700 md:text-lg">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <LinkBtn href="/login" className="min-h-11 px-5">Probar la demo</LinkBtn>
-              <LinkBtn href="/registro" variante="borde" className="min-h-11 px-5">Crear cuenta</LinkBtn>
+        <section className="relative overflow-hidden border-b border-zinc-200/80 bg-gradient-to-b from-white to-zinc-50">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(24,24,27,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(24,24,27,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+          <div className="relative mx-auto max-w-5xl px-4 pb-14 pt-12 text-center md:pb-20 md:pt-20">
+            <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.05)] backdrop-blur">
+              <span className="relative flex size-2" aria-hidden="true">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:animate-none" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+              </span>
+              Piura · Lambayeque
+            </p>
+            <h1 className="mx-auto mt-5 max-w-3xl bg-gradient-to-b from-zinc-950 to-zinc-600 bg-clip-text text-4xl font-semibold leading-[1.05] tracking-tight text-transparent md:text-6xl">Acopia con precio justo.</h1>
+            <p className="mx-auto mt-5 max-w-xl text-base text-zinc-600 md:text-lg">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <LinkBtn href="/login" className="min-h-11 rounded-xl bg-emerald-600 px-6 shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_6px_16px_-6px_rgba(5,150,105,0.7)] hover:bg-emerald-700">Probar la demo</LinkBtn>
+              <LinkBtn href="/registro" variante="borde" className="min-h-11 rounded-xl border-zinc-200 bg-white/80 px-6 backdrop-blur hover:border-zinc-300 hover:bg-white">Crear cuenta</LinkBtn>
             </div>
+            <VistaPreviaProducto />
           </div>
         </section>
 
-        <div className="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-8 md:py-10">
+        <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 py-12 md:py-16">
           {/* Cómo funciona */}
           <Seccion titulo="Cómo funciona" descripcion="Cuatro pasos, desde el reporte del proveedor hasta el certificado.">
-            <ol aria-label="Cómo funciona" className="grid divide-y divide-line overflow-hidden rounded-card border border-line bg-white shadow-card md:grid-cols-4 md:divide-x md:divide-y-0">
+            <ol aria-label="Cómo funciona" className="relative grid gap-3 md:grid-cols-4">
+              <div aria-hidden="true" className="absolute left-[12%] right-[12%] top-[30px] hidden h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent md:block" />
               {CICLO.map((c, k) => (
-                <li key={c.t} className="flex gap-3 p-4">
-                  <span aria-hidden="true" className="num grid size-7 shrink-0 place-items-center rounded-md bg-nav-700 text-sm font-semibold text-white">{k + 1}</span>
+                <li key={c.t} className={`${SUPERFICIE} flex flex-col gap-3 p-4 transition hover:-translate-y-0.5 hover:border-zinc-300`}>
+                  <span aria-hidden="true" className="relative z-10 w-fit rounded-md border border-emerald-600/20 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-semibold tabular-nums text-emerald-700">{String(k + 1).padStart(2, "0")}</span>
                   <div className="min-w-0">
-                    <h3 className="text-base font-semibold text-nav-900">{c.t}</h3>
-                    <p className="mt-1 text-sm text-ink-700">{c.d}</p>
+                    <h3 className="text-base font-semibold tracking-tight text-zinc-900">{c.t}</h3>
+                    <p className="mt-1 text-sm text-zinc-600">{c.d}</p>
                   </div>
                 </li>
               ))}
@@ -114,39 +149,43 @@ export default function LandingB2B() {
 
           {/* Recorridos */}
           <Seccion titulo="Elige un recorrido" descripcion="Tres ejemplos de principio a fin.">
-            <Tabs
+            <Segmented
               etiqueta="Recorrido"
               valor={sel}
               onChange={setSel}
               opciones={RECORRIDOS.map((r) => ({ valor: r.id, etiqueta: r.corto }))}
               className="mb-4"
             />
-            <div className="rounded-card border border-line bg-white p-4 shadow-card md:p-5">
-              <h3 className="mb-4 text-base font-semibold text-nav-900">{rec.titulo}</h3>
+            <div className={`${SUPERFICIE} p-4 md:p-6`}>
+              <h3 className="mb-4 text-base font-semibold tracking-tight text-zinc-900">{rec.titulo}</h3>
               <RecorridoIlustrado key={rec.id} pasos={rec.pasos} color={rec.color} titulo={rec.titulo} />
             </div>
           </Seccion>
 
           {/* Beneficios */}
           <Seccion titulo="Qué te da Swapit" descripcion="Una herramienta para acopiadores, no un marketplace.">
-            <ul className="grid divide-y divide-line overflow-hidden rounded-card border border-line bg-white shadow-card md:grid-cols-3 md:divide-x md:divide-y-0">
-              {BENEFICIOS.map((b) => (
-                <li key={b.titulo} className="p-4 md:p-5">
-                  <p className="num text-[28px] font-semibold leading-none text-nav-900">{b.cifra}</p>
-                  <h3 className="mt-2 text-base font-semibold text-nav-900">{b.titulo}</h3>
-                  <p className="mt-0.5 text-sm text-ink-700">{b.linea}</p>
+            <ul className="grid gap-3 md:grid-cols-3">
+              {BENTO.map((b) => (
+                <li key={b.titulo} className={`${SUPERFICIE} flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:border-zinc-300`}>
+                  <div aria-hidden="true" className="min-h-[148px] border-b border-zinc-200/70 bg-gradient-to-b from-zinc-50 to-white p-4">
+                    <EscenaBento escena={b.escena} />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-base font-semibold tracking-tight text-zinc-900">{b.titulo}</h3>
+                    <p className="mt-0.5 text-sm text-zinc-600">{b.linea}</p>
+                  </div>
                 </li>
               ))}
             </ul>
             <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1">
               {GARANTIAS.map((g) => (
-                <li key={g} className="flex min-h-9 items-center gap-1.5 text-sm font-medium text-ink-900">
-                  <Icono nombre="check" size={16} className="text-pri-600" />{g}
+                <li key={g} className="flex min-h-9 items-center gap-1.5 text-sm font-medium text-zinc-900">
+                  <Icono nombre="check" size={16} className="text-emerald-600" />{g}
                 </li>
               ))}
             </ul>
-            <details className="mt-2 text-sm text-ink-700">
-              <summary className="inline-flex min-h-10 cursor-pointer items-center font-semibold text-nav-700">Cómo se paga</summary>
+            <details className="mt-2 text-sm text-zinc-600">
+              <summary className="inline-flex min-h-10 cursor-pointer items-center font-semibold text-zinc-900">Cómo se paga</summary>
               <p className="pb-2">Suscripción mensual y un costo por certificado. En esta demo, los precios y cobros son de ejemplo y simulados.</p>
             </details>
           </Seccion>
@@ -155,7 +194,7 @@ export default function LandingB2B() {
           <Seccion
             titulo="Cada residuo, varias vidas"
             descripcion="Qué residuos salen de cada proceso productivo y en qué se pueden convertir. Información libre."
-            acciones={<Link href="/aprovechamiento" className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-nav-700 hover:underline">Explorar cadenas <Icono nombre="flecha" size={16} /></Link>}
+            acciones={<Link href="/aprovechamiento" className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-emerald-700 hover:underline">Explorar cadenas <Icono nombre="flecha" size={16} /></Link>}
           >
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {cadenas.map((c) => {
@@ -163,20 +202,23 @@ export default function LandingB2B() {
                 const nombre = c.id === "empaques-y-apoyo" ? "Empaques y apoyo" : c.nombre;
                 return (
                   <li key={c.id}>
-                    <Link href={`/aprovechamiento/cadena/${c.id}`} className="block h-full rounded-card border border-line bg-white p-4 shadow-card transition hover:border-nav-600">
-                      <span className="flex items-center gap-1.5 text-xs text-ink-700">
+                    <Link href={`/aprovechamiento/cadena/${c.id}`} className={`${SUPERFICIE} group block h-full p-4 transition duration-200 hover:-translate-y-1 ${HOVER_SECTOR[c.sector] ?? HOVER_SECTOR.OTRO}`}>
+                      <span className="flex items-center gap-1.5 text-xs text-zinc-600">
                         <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${CLASE_SECTOR[c.sector].linea}`} />
                         {c.sector === "OTRO" ? "Todos los sectores" : (nombreSector(c.sector)?.split(" y ")[0] ?? "Varios sectores")}
                       </span>
-                      <span className="mt-1.5 block text-base font-semibold text-nav-900">{nombre}</span>
-                      <span className="num mt-1 block text-sm text-ink-500">{c.etapas.length} {c.etapas.length === 1 ? "etapa" : "etapas"} · {residuos} residuos</span>
+                      <span className="mt-1.5 flex items-start justify-between gap-2 text-base font-semibold tracking-tight text-zinc-900">
+                        {nombre}
+                        <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-sm text-zinc-500 transition group-hover:bg-zinc-900 group-hover:text-white">↗</span>
+                      </span>
+                      <span className="mt-1 block font-mono text-sm tabular-nums text-zinc-500">{c.etapas.length} {c.etapas.length === 1 ? "etapa" : "etapas"} · {residuos} residuos</span>
                     </Link>
                   </li>
                 );
               })}
             </ul>
             <p className="mt-3 text-sm">
-              <Link href="/aprovechamiento/mype" className="inline-flex min-h-10 items-center gap-1 font-semibold text-nav-700 hover:underline">
+              <Link href="/aprovechamiento/mype" className="inline-flex min-h-10 items-center gap-1 font-semibold text-emerald-700 hover:underline">
                 Soy MYPE: ver usos a mi alcance <Icono nombre="flecha" size={16} />
               </Link>
             </p>
@@ -184,10 +226,10 @@ export default function LandingB2B() {
         </div>
       </main>
 
-      <footer className="border-t border-line bg-white px-4 py-5 text-center text-sm text-ink-500">
+      <footer className="border-t border-zinc-200/80 bg-white px-4 py-5 text-center text-sm text-zinc-500">
         Prototipo; datos de ejemplo · SeedTech UDEP 2026
         <details className="mx-auto mt-1 max-w-xl text-xs">
-          <summary className="inline-flex min-h-10 cursor-pointer items-center font-semibold text-nav-700">Ver aviso</summary>
+          <summary className="inline-flex min-h-10 cursor-pointer items-center font-semibold text-zinc-900">Ver aviso</summary>
           <p>Todos los datos de la demostración son ficticios; los rangos de precio son datos de ejemplo hasta cargar compras reales.</p>
         </details>
       </footer>

@@ -13,3 +13,6 @@ dist-test
 # base de datos embebida de desarrollo y archivos subidos
 apps/api/.pgdata
 apps/api/uploads
+
+.vercel
+.env*

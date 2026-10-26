@@ -118,7 +118,7 @@ export function Seccion({ titulo, descripcion, acciones, children, className = "
     <section className={className}>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-nav-900 md:text-lg">{titulo}</h2>
+          <h2 className="text-base font-semibold tracking-tight text-nav-900 md:text-lg">{titulo}</h2>
           {descripcion && <p className="mt-0.5 text-sm text-ink-500">{descripcion}</p>}
         </div>
         {acciones && <div className="flex flex-wrap items-center gap-2">{acciones}</div>}
@@ -215,6 +215,54 @@ export function Tabs({ opciones, valor, onChange, className = "", etiqueta = "Se
           >
             {o.etiqueta}
             {o.conteo != null && <span className={`num rounded-md px-1.5 text-xs ${activa ? "bg-pri-50 text-pri-700" : "bg-ink-100 text-ink-700"}`}>{o.conteo}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Control segmentado estilo iOS: píldora deslizante bajo la opción activa. Misma semántica y teclado (← →) que `Tabs`.
+ * El deslizador mide cada opción por igual (`grid-cols-N`), así que la transición solo mueve un `translateX`.
+ */
+export function Segmented({ opciones, valor, onChange, className = "", etiqueta = "Opciones" }: { opciones: OpcionTab[]; valor: string; onChange: (v: string) => void; className?: string; etiqueta?: string }) {
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const idx = Math.max(0, opciones.findIndex((o) => o.valor === valor));
+  const mover = (e: React.KeyboardEvent, i: number) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    const j = (i + (e.key === "ArrowRight" ? 1 : opciones.length - 1)) % opciones.length;
+    onChange(opciones[j].valor);
+    refs.current[j]?.focus();
+  };
+  return (
+    <div
+      role="tablist"
+      aria-label={etiqueta}
+      style={{ gridTemplateColumns: `repeat(${opciones.length}, minmax(0, 1fr))` }}
+      className={`relative inline-grid rounded-xl bg-zinc-100 p-1 ring-1 ring-inset ring-zinc-200/80 ${className}`}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-1 left-1 rounded-lg bg-white shadow-[0_1px_2px_rgba(24,24,27,0.12),0_0_0_1px_rgba(24,24,27,0.04)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
+        style={{ width: `calc((100% - 0.5rem) / ${opciones.length})`, transform: `translateX(${idx * 100}%)` }}
+      />
+      {opciones.map((o, i) => {
+        const activa = i === idx;
+        return (
+          <button
+            key={o.valor}
+            ref={(el) => { refs.current[i] = el; }}
+            type="button"
+            role="tab"
+            aria-selected={activa}
+            tabIndex={activa ? 0 : -1}
+            onClick={() => onChange(o.valor)}
+            onKeyDown={(e) => mover(e, i)}
+            className={`relative z-10 min-h-9 rounded-lg px-4 text-sm transition-colors duration-200 ${activa ? "font-semibold text-zinc-900" : "font-medium text-zinc-500 hover:text-zinc-800"}`}
+          >
+            {o.etiqueta}
           </button>
         );
       })}

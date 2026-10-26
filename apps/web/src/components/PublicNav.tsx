@@ -16,10 +16,10 @@ export default function PublicNav({ detectarSesion = false }: { detectarSesion?:
   useEffect(() => {
     if (detectarSesion) api("/auth/me").then(() => setDentro(true)).catch(() => undefined);
   }, [detectarSesion]);
-  const enlace = "min-h-10 items-center gap-1.5 rounded-control px-3 py-2 text-sm font-medium text-ink-700 hover:bg-nav-50 hover:text-nav-900";
-  const primario = "inline-flex min-h-10 whitespace-nowrap items-center rounded-control bg-pri-600 px-4 py-2 text-sm font-semibold text-white hover:bg-pri-700";
+  const enlace = "min-h-10 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900";
+  const primario = "inline-flex min-h-10 whitespace-nowrap items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_1px_2px_rgba(24,24,27,0.2)] transition hover:bg-zinc-700";
   return (
-    <header className="border-b border-line bg-white">
+    <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2">
         <Logo />
         <nav className="flex items-center gap-1 sm:gap-2" aria-label="Principal">
