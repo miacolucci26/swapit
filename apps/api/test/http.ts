@@ -1,5 +1,5 @@
 // Las suites sin modo fijado son de la herramienta para acopiadores (el código ya no la usa por defecto).
-process.env.SWAPIT_MODO ??= 'B2B2B';
+if (process.env.SWAPIT_MODO !== 'MARKETPLACE') process.env.SWAPIT_ACOPIADORES ??= '1';
 import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';

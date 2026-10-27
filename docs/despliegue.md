@@ -63,7 +63,7 @@ Hace dos cosas: (1) carga el **catálogo base** (22 categorías de residuo y la 
 
 1. En [vercel.com/new](https://vercel.com/new) importa el repositorio → **Root Directory: `apps/api`** (déjalo activado *Include source files outside of the Root Directory*: la API usa `packages/shared`).
 2. **Framework Preset: Other** (el `vercel.json` ya trae `"framework": null`). Install, Build y Output salen de `apps/api/vercel.json` (instalación filtrada del monorepo con pnpm, `shared build` + `prisma generate` + `nest build`). No los cambies en el panel. Node.js 22.x.
-3. **Variables de entorno** (Production): ver la tabla del §6. Mínimo: `DATABASE_URL`, `JWT_SECRET`, `WEB_ORIGIN`, `TRUST_PROXY=1`, `STORAGE_DRIVER=supabase`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`, `SWAPIT_MODO`, `OCULTAR_DEMO=1`. Si falta algo, **la API no arranca** y el log dice qué falta (validación de producción en `common/config-env.ts` y `bootstrap.ts`).
+3. **Variables de entorno** (Production): ver la tabla del §6. Mínimo: `DATABASE_URL`, `JWT_SECRET`, `WEB_ORIGIN`, `TRUST_PROXY=1`, `STORAGE_DRIVER=supabase`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`, `OCULTAR_DEMO=1`. Si falta algo, **la API no arranca** y el log dice qué falta (validación de producción en `common/config-env.ts` y `bootstrap.ts`).
 4. **Deployment Protection** (*Settings → Deployment Protection*): la API debe ser alcanzable por la web. Si la protección estándar bloquea el dominio de la API (la web recibiría 401), usa un dominio propio para la API (p. ej. `api.tudominio.pe`) o desactiva la protección en producción para este proyecto.
 5. Despliega y comprueba `https://<dominio-de-la-api>/api/health`: debe responder `{"ok":true,"db":true,"postgis":true,"pgvector":true}`. Un `503` significa que la base no contesta o faltan las extensiones.
 
@@ -86,7 +86,7 @@ Plantilla completa y comentada: [`.env.example`](../.env.example). En Vercel mar
 | `WEB_ORIGIN` | api | no | URL pública de la web (CORS, CSRF, cookies); `https` |
 | `TRUST_PROXY` | api | no | `1` en Vercel (IP real para los límites de uso) |
 | `REGISTRO_ABIERTO` | api | no | `false` cierra el registro público (ver §7) |
-| `SWAPIT_MODO` | api | no | Vacío o `MARKETPLACE` (por defecto): marketplace comprador/vendedor. `B2B2B`: herramienta para acopiadores |
+| `SWAPIT_ACOPIADORES` | api | no | Sin definir (por defecto): marketplace comprador/vendedor. `1`: herramienta para acopiadores. `SWAPIT_MODO` ya no se lee. |
 | `STORAGE_DRIVER` | api | no | `supabase` en producción (`local` solo desarrollo) |
 | `SUPABASE_URL` | api | no | URL del proyecto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | api | **Sí** | Escribir en Storage (clave de servicio) |

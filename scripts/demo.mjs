@@ -23,7 +23,7 @@ const ENV_LOCAL = {
   WEB_ORIGIN: 'http://localhost:3000',
   // Modo por defecto: la experiencia de INTERCAMBIO (ofertantes con fotos, demandantes, oferta de precio en la plataforma), que es
   // la que se muestra en el pitch. Con --b2b (pnpm demo:b2b) se ve Swapit para intermediarios (acopiadores).
-  SWAPIT_MODO: process.argv.includes('--b2b') ? 'B2B2B' : 'MARKETPLACE',
+  SWAPIT_ACOPIADORES: process.argv.includes('--b2b') ? '1' : '',
 };
 
 const paso = (t) => console.log(`\n\x1b[32m▸ ${t}\x1b[0m`);

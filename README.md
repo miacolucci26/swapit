@@ -66,11 +66,11 @@ Para activar la IA real crea `apps/api/.env` con `ANTHROPIC_API_KEY=…` y/o `OP
 - **Benchmark:** `packages/shared/src/benchmark.ts` (pesos: material 45 %, cercanía 20 %, volumen 20 %, recencia 15 %). Otros subtipos de la familia solo se usan de respaldo; con ≥ 5 precios reales del subtipo, los datos de ejemplo dejan de usarse.
 - **Certificados:** `transaccionId` o `loteId` de origen; el hash cubre generador, intermediario emisor y cliente destino; los certificados del marketplace siguen verificando. Exige suscripción activa y registra un fee.
 
-## Dos modos: `SWAPIT_MODO`
+## Dos modos: `SWAPIT_ACOPIADORES`
 | | |
 |---|---|
-| `B2B2B` (con `pnpm demo:b2b`; por defecto del código) | Intermediarios, proveedores, benchmark, certificados co-marcados, portal y WhatsApp. Lo del marketplace responde **404**. |
-| `MARKETPLACE` (por defecto de `pnpm demo`) | Intercambio entre empresas: personas y empresas, transacciones con chat y pago en garantía, créditos, búsqueda y alertas, modo confidencial, cumplimiento REP. `pnpm demo:marketplace` (o `:reset`). |
+| `SWAPIT_ACOPIADORES=1` (con `pnpm demo:b2b`) | Intermediarios, proveedores, benchmark, certificados co-marcados, portal y WhatsApp. Lo del marketplace responde **404**. |
+| Sin la variable (por defecto del código y de `pnpm demo`): marketplace comprador/vendedor | Intercambio entre empresas: personas y empresas, transacciones con chat y pago en garantía, créditos, búsqueda y alertas, modo confidencial, cumplimiento REP. `pnpm demo:marketplace` (o `:reset`). |
 
 Las pruebas del modo anterior están en `apps/api/test/marketplace/` y fijan el modo; se borrarán junto con ese código (criterio en la decisión 0001).
 
