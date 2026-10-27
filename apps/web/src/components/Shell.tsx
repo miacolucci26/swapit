@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { Logo } from "./Logo";
+import ShellMarket from "./ShellMarket";
 import ToggleTema from "./ToggleTema";
 import { Cargando } from "./ui";
 import { Icono, type NombreIcono } from "./vis/Iconos";
@@ -43,7 +44,7 @@ const NAV_B2B: ItemNav[] = [
 const PRINCIPALES_MOVIL = ["/panel", "/red", "/material", "/acuerdos"];
 
 /** Pantallas del marketplace anterior: en modo B2B2B no existen y se vuelve al panel. */
-const RUTAS_MARKETPLACE = ["/lotes", "/mapa", "/matching", "/creditos", "/transacciones", "/cumplimiento"];
+const RUTAS_MARKETPLACE = ["/lotes", "/mapa", "/matching", "/creditos", "/transacciones", "/cumplimiento", "/publicar", "/mis-productos", "/finanzas", "/compras", "/favoritos", "/chats"];
 
 export { Logo };
 
@@ -71,6 +72,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) return <Cargando />;
   if (b2b && enRutaMarketplace) return <Cargando />;
+  // Marketplace: modos comprador y vendedor con barra superior y menú de bolita (docs/diseno/estructura-web.md).
+  if (!b2b) return <ShellMarket>{children}</ShellMarket>;
   const base: ItemNav[] = b2b ? NAV_B2B : NAV;
   const items: ItemNav[] = user.rol === "ADMIN" && !b2b ? [...base, { href: "/admin", etiqueta: "Moderación", icono: "candado" }] : base;
   const estaActivo = (href: string) => {

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { Btn, Field, inputCls } from "@/components/ui";
+import { Btn, Field, inputCls, Segmented } from "@/components/ui";
 import { Icono } from "@/components/vis/Iconos";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, type UsuarioSesion } from "@/lib/api";
 import { useModo } from "@/lib/modo";
+import { ETIQUETA_MODO, guardarModo, modoDeUrl, modosDeRol, type ModoUso } from "@/lib/modoUso";
 
 interface Demo { email: string; pass: string; titulo: string; rol: string }
 
@@ -16,25 +17,43 @@ const DEMO_B2B: Demo[] = [
   { email: "operaciones@reciclajesnorte.pe", pass: "demo1234", titulo: "Reciclajes del Norte", rol: "Sullana · sin suscripción" },
 ];
 
-// En la experiencia de intercambio solo hay empresas (y la moderación): las cuentas de personas no se ofrecen.
-const DEMO: Demo[] = [
-  { email: "ana@vallesol.pe", pass: "demo1234", titulo: "Agroexport Vallesol", rol: "Empresa ofertante" },
-  { email: "carlos@biocompost.pe", pass: "demo1234", titulo: "BioCompost", rol: "Empresa receptora" },
-  { email: "admin@swapit.pe", pass: "admin12345", titulo: "Administrador", rol: "Moderación" },
-];
+// Marketplace: cuentas de demo según el modo con el que se entra (Ana tiene los dos).
+const DEMO: Record<ModoUso, Demo[]> = {
+  comprador: [
+    { email: "carlos@biocompost.pe", pass: "demo1234", titulo: "BioCompost", rol: "Solo comprador" },
+    { email: "ana@vallesol.pe", pass: "demo1234", titulo: "Agroexport Vallesol", rol: "Comprador y vendedor" },
+    { email: "admin@swapit.pe", pass: "admin12345", titulo: "Administrador", rol: "Moderación" },
+  ],
+  vendedor: [
+    { email: "luis@losandes.pe", pass: "demo1234", titulo: "Frutícola Los Andes", rol: "Solo vendedor" },
+    { email: "ana@vallesol.pe", pass: "demo1234", titulo: "Agroexport Vallesol", rol: "Comprador y vendedor" },
+  ],
+};
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const modo = useModo();
+  const marketplace = modo === "MARKETPLACE";
+  const [modoUso, setModoUso] = useState<ModoUso>("comprador");
+  useEffect(() => setModoUso(modoDeUrl() ?? "comprador"), []);
 
   async function entrar(email: string, password: string) {
     setError("");
     setLoading(true);
     try {
-      await api("/auth/login", { method: "POST", json: { email, password } });
-      router.push("/panel");
+      const { usuario } = await api<{ usuario: UsuarioSesion }>("/auth/login", { method: "POST", json: { email, password } });
+      if (!marketplace) return router.push("/panel");
+      // Cada modo tiene su propia entrada: si la cuenta aún no lo tiene, entra con el que sí tiene y se le ofrece activarlo.
+      const modos = modosDeRol(usuario.empresa.rol);
+      if (modos.includes(modoUso) || !modos.length) {
+        guardarModo(modoUso);
+        router.push("/lotes");
+      } else {
+        guardarModo(modos[0]);
+        router.push(`/perfil?activar=${modoUso}`);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo conectar con el servidor");
       setLoading(false);
@@ -50,8 +69,17 @@ export default function LoginPage() {
 
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-10">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Ingresar</h1>
-          <p className="mt-1.5 text-sm text-zinc-500">Accede con el correo y la contraseña de tu empresa.</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">{marketplace ? `Ingresar como ${ETIQUETA_MODO[modoUso].toLowerCase()}` : "Ingresar"}</h1>
+          <p className="mt-1.5 text-sm text-zinc-500">{marketplace ? "Accede con tu correo y tu contraseña." : "Accede con el correo y la contraseña de tu empresa."}</p>
+          {marketplace && (
+            <Segmented
+              etiqueta="Modo"
+              className="mt-4"
+              valor={modoUso}
+              onChange={(v) => setModoUso(v as ModoUso)}
+              opciones={[{ valor: "comprador", etiqueta: "Comprador" }, { valor: "vendedor", etiqueta: "Vendedor" }]}
+            />
+          )}
         </div>
 
         <form
@@ -82,7 +110,7 @@ export default function LoginPage() {
             </p>
           )}
           <Btn disabled={loading} className="min-h-11 rounded-xl bg-zinc-900 dark:text-zinc-50 shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_1px_2px_rgba(24,24,27,0.2)] hover:bg-zinc-700">{loading ? "Ingresando…" : "Ingresar"}</Btn>
-          <p className="text-center text-sm text-zinc-600">¿Sin cuenta? <Link href="/registro" className="inline-flex min-h-10 items-center font-semibold text-emerald-700 underline underline-offset-4">Crear cuenta</Link></p>
+          <p className="text-center text-sm text-zinc-600">¿Sin cuenta? <Link href={marketplace ? `/registro?modo=${modoUso}` : "/registro"} className="inline-flex min-h-10 items-center font-semibold text-emerald-700 underline underline-offset-4">Crear cuenta</Link></p>
         </form>
 
         <section aria-labelledby="demo">
@@ -91,7 +119,7 @@ export default function LoginPage() {
             <p className="text-xs text-zinc-500">Datos de ejemplo. Un clic y entras.</p>
           </div>
           <ul className="flex flex-col gap-2">
-            {(modo === "MARKETPLACE" ? DEMO : DEMO_B2B).map((d) => (
+            {(marketplace ? DEMO[modoUso] : DEMO_B2B).map((d) => (
               <li key={d.email}>
                 <button
                   type="button"

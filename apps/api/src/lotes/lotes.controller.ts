@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { Modalidad, crearLoteSchema } from '@swapit/shared';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Modalidad, crearLoteSchema, editarLoteSchema } from '@swapit/shared';
 import { z } from 'zod';
 import type { Request } from 'express';
 import { SoloMarketplace } from '../common/modo';
@@ -44,9 +44,33 @@ export class LotesController {
     return this.lotes.listar(req.user.empresaId, { ...f, mios: mios === '1' });
   }
 
+  // Va antes de «:id» para no confundirse con un lote.
+  @Get('geocodificar')
+  geocodificar(@Query('q') q?: string) {
+    const { q: direccion } = parseBody(z.object({ q: z.string().trim().min(3).max(200) }), { q });
+    return this.lotes.geocodificar(direccion);
+  }
+
   @Get(':id')
   detalle(@Req() req: AuthReq, @Param('id') id: string) {
     return this.lotes.detalle(id, req.user.empresaId);
+  }
+
+  @Patch(':id')
+  editar(@Req() req: AuthReq, @Param('id') id: string, @Body() body: unknown) {
+    return this.lotes.editar(id, req.user.empresaId, parseBody(editarLoteSchema, body));
+  }
+
+  @Post(':id/pausar')
+  @HttpCode(200)
+  pausar(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.lotes.pausar(id, req.user.empresaId, true);
+  }
+
+  @Post(':id/reanudar')
+  @HttpCode(200)
+  reanudar(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.lotes.pausar(id, req.user.empresaId, false);
   }
 
   @Delete(':id')

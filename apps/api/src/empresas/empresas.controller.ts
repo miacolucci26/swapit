@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { actualizarEmpresaSchema, actualizarProveedorSchema, certificacionSchema, crearProveedorSchema } from '@swapit/shared';
+import { activarModoSchema, actualizarEmpresaSchema, actualizarProveedorSchema, certificacionSchema, crearProveedorSchema } from '@swapit/shared';
 import type { Request } from 'express';
 import { AuthGuard, JwtPayload, RolesEmpresa, Tipos } from '../auth/auth.guard';
+import { SoloMarketplace } from '../common/modo';
 import { parseBody } from '../common/zod-body';
 import { EmpresasService } from './empresas.service';
 
@@ -20,6 +21,13 @@ export class EmpresasController {
   @Patch('mi')
   actualizar(@Req() req: AuthReq, @Body() body: unknown) {
     return this.empresas.actualizar(req.user.empresaId, parseBody(actualizarEmpresaSchema, body));
+  }
+
+  @Post('mi/activar-modo')
+  @SoloMarketplace()
+  @HttpCode(200)
+  activarModo(@Req() req: AuthReq, @Body() body: unknown) {
+    return this.empresas.activarModo(req.user.empresaId, parseBody(activarModoSchema, body));
   }
 
   @Post('mi/verificar-kyb')

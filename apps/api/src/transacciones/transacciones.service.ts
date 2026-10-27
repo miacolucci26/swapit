@@ -66,9 +66,14 @@ export class TransaccionesService {
   }
 
   /** Nombre con que se ve a la otra parte: «Empresa confidencial» mientras no haya respondido el ofertante. */
-  private nombreVisible(t: { identidadRevelada: boolean }, e: { id: string; razonSocial: string; confidencial: boolean }, actor: JwtPayload) {
+  private nombreVisible(t: { identidadRevelada: boolean }, e: { id: string; razonSocial: string; confidencial: boolean; nombreTienda?: string | null }, actor: JwtPayload) {
     const oculto = !t.identidadRevelada && e.confidencial && e.id !== actor.empresaId && actor.rol !== 'ADMIN';
     return oculto ? 'Empresa confidencial' : e.razonSocial;
+  }
+
+  /** El vendedor aparece con el nombre de su tienda (si lo registró); el comprador, con su nombre. */
+  private nombreVendedor(t: { identidadRevelada: boolean }, e: { id: string; razonSocial: string; confidencial: boolean; nombreTienda?: string | null }, actor: JwtPayload) {
+    return this.nombreVisible(t, { ...e, razonSocial: e.nombreTienda ?? e.razonSocial }, actor);
   }
 
   private async mover(db: Prisma.TransactionClient | PrismaService, t: { id: string; estado: EstadoTransaccion }, hacia: EstadoTransaccion, data: Prisma.TransaccionUpdateInput = {}) {
@@ -483,7 +488,7 @@ export class TransaccionesService {
     const ts = await this.prisma.transaccion.findMany({
       where: { OR: [{ ofertanteId: empresaId }, { receptorId: empresaId }] },
       orderBy: { updatedAt: 'desc' },
-      include: { lote: { include: { categoria: { select: { nombre: true, codigo: true } }, imagenes: { orderBy: { orden: 'asc' }, take: 1 } } }, ofertante: { select: { id: true, razonSocial: true, tipo: true, confidencial: true, esDemo: true } }, receptor: { select: { id: true, razonSocial: true, tipo: true, confidencial: true, esDemo: true } }, certificado: { select: { codigo: true } } },
+      include: { lote: { include: { categoria: { select: { nombre: true, codigo: true } }, imagenes: { orderBy: { orden: 'asc' }, take: 1 } } }, ofertante: { select: { id: true, razonSocial: true, nombreTienda: true, tipo: true, confidencial: true, esDemo: true } }, receptor: { select: { id: true, razonSocial: true, tipo: true, confidencial: true, esDemo: true } }, certificado: { select: { codigo: true } } },
     });
     return ts.map((t) => {
       const rol: Rol = t.ofertanteId === empresaId ? 'OFERTANTE' : 'RECEPTOR';
@@ -502,7 +507,7 @@ export class TransaccionesService {
         lote: { id: t.loteId, titulo: t.lote.titulo, categoria: t.lote.categoria.nombre, categoriaCodigo: t.lote.categoria.codigo, unidad: t.lote.unidad, imagen: t.lote.imagenes[0]?.url ?? null },
         contraparte: (() => {
           const c = rol === 'OFERTANTE' ? t.receptor : t.ofertante;
-          return { id: c.id, tipo: c.tipo, razonSocial: this.nombreVisible(t, c, actor), demo: c.esDemo };
+          return { id: c.id, tipo: c.tipo, razonSocial: rol === 'OFERTANTE' ? this.nombreVisible(t, c, actor) : this.nombreVendedor(t, t.ofertante, actor), demo: c.esDemo };
         })(),
         certificado: t.certificado?.codigo ?? null,
         pendiente,
@@ -553,7 +558,7 @@ export class TransaccionesService {
       comisionPagadaConCreditos: !!contrato.comisionPagadaConCreditos,
       lote: { id: t.loteId, titulo: t.lote.titulo, categoria: t.lote.categoria.nombre, cantidadDisponible: t.lote.cantidadDisponible, unidad: t.lote.unidad, imagen: imagenes[0]?.url ?? null, notaIntercambio: t.lote.notaIntercambio ?? null, entrega: t.lote.entrega, condicion: t.lote.condicion },
       loteIntercambio: loteIntercambio ?? null,
-      ofertante: { id: t.ofertante.id, tipo: t.ofertante.tipo, razonSocial: this.nombreVisible(t, t.ofertante, actor), ratingProm: t.ofertante.ratingProm, demo: t.ofertante.esDemo },
+      ofertante: { id: t.ofertante.id, tipo: t.ofertante.tipo, razonSocial: this.nombreVendedor(t, t.ofertante, actor), ratingProm: t.ofertante.ratingProm, demo: t.ofertante.esDemo },
       receptor: { id: t.receptor.id, tipo: t.receptor.tipo, razonSocial: this.nombreVisible(t, t.receptor, actor), ratingProm: t.receptor.ratingProm, demo: t.receptor.esDemo },
       // Contacto de la otra empresa: solo desde ACORDADO en adelante y solo para las partes (null antes del acuerdo).
       contactoContraparte: contactoDeContraparte({

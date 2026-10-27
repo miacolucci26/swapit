@@ -11,7 +11,7 @@ export type Modalidad = (typeof Modalidad)[number];
 export const EstadoKyb = ['PENDIENTE', 'VERIFICADA', 'RECHAZADA', 'NO_APLICA'] as const;
 export type EstadoKyb = (typeof EstadoKyb)[number];
 
-export const EstadoLote = ['BORRADOR', 'PUBLICADO', 'RESERVADO', 'CERRADO', 'RETIRADO', 'REPORTADO', 'COTIZADO', 'ACOPIADO', 'DESPACHADO', 'RECHAZADO'] as const;
+export const EstadoLote = ['BORRADOR', 'PUBLICADO', 'RESERVADO', 'CERRADO', 'RETIRADO', 'REPORTADO', 'COTIZADO', 'ACOPIADO', 'DESPACHADO', 'RECHAZADO', 'PAUSADO'] as const;
 export type EstadoLote = (typeof EstadoLote)[number];
 
 export const FrecuenciaLote = ['UNICO', 'RECURRENTE', 'ESTACIONAL'] as const;

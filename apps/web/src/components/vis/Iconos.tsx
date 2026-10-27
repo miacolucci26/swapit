@@ -41,7 +41,18 @@ export type NombreIcono =
   | "fabrica"
   | "grafico"
   | "sol"
-  | "mar";
+  | "mar"
+  | "tienda"
+  | "usuario"
+  | "documento"
+  | "chat"
+  | "corazon"
+  | "caja"
+  | "editar"
+  | "pausa"
+  | "reanudar"
+  | "basura"
+  | "salir";
 
 /** Flecha del símbolo de reciclaje: borde inferior hacia la izquierda. */
 const FlechaCiclo = () => (
@@ -52,6 +63,59 @@ const FlechaCiclo = () => (
 );
 
 const DIBUJOS: Record<NombreIcono, ReactNode> = {
+  tienda: (
+    <>
+      <path d="M3.5 9 5 4h14l1.5 5" />
+      <path d="M3.5 9a2.6 2.6 0 0 0 5.2 0 2.6 2.6 0 0 0 5.2 0 2.6 2.6 0 0 0 5.2 0H3.5z" />
+      <path d="M5 11.5V20h14v-8.5" />
+      <path d="M10 20v-5h4v5" />
+    </>
+  ),
+  usuario: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </>
+  ),
+  documento: (
+    <>
+      <path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z" />
+      <path d="M14 3v5h5M9 13h6M9 17h6" />
+    </>
+  ),
+  chat: (
+    <>
+      <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z" />
+      <path d="M8 10h8M8 13.5h5" />
+    </>
+  ),
+  corazon: <path d="M12 20s-7.5-4.6-9-9.4C2 7.3 4.2 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.8 1.1-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.8 4.3 6.1C19.5 15.4 12 20 12 20z" />,
+  caja: (
+    <>
+      <path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z" />
+      <path d="M3.5 7.5 12 12l8.5-4.5M12 12v9" />
+    </>
+  ),
+  editar: (
+    <>
+      <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-4-4L4 16z" />
+      <path d="m14 6 4 4" />
+    </>
+  ),
+  pausa: <path d="M9 5v14M15 5v14" />,
+  reanudar: <path d="M7 4.5v15l12-7.5z" />,
+  basura: (
+    <>
+      <path d="M4 7h16M9.5 7V4.5h5V7" />
+      <path d="M6 7l1 13h10l1-13M10 11v5M14 11v5" />
+    </>
+  ),
+  salir: (
+    <>
+      <path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5" />
+      <path d="M10 8l-4 4 4 4M6 12h10" />
+    </>
+  ),
   inicio: (
     <>
       <path d="M3 11.5 12 4l9 7.5" />

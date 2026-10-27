@@ -61,6 +61,8 @@ enum EstadoLote {
   ACOPIADO
   DESPACHADO
   RECHAZADO
+  // Modo vendedor: oculto del marketplace sin borrarlo; el vendedor lo reanuda desde «Mis productos».
+  PAUSADO
 }
 
 enum FrecuenciaLote {
@@ -143,6 +145,10 @@ model Empresa {
   // El intermediario decide si sus precios observados alimentan el pool compartido (anónimo). Por defecto no.
   whatsappPhoneId    String?                               @unique
   compartirPrecios   Boolean                               @default(false)
+  /// Modo vendedor: nombre de la tienda (se muestra en las ofertas en lugar de razonSocial) y cómo cobra (YAPE, PLIN, TRANSFERENCIA).
+  nombreTienda       String?
+  cobroMetodo        String?
+  cobroCuenta        String?
   ratingProm         Float                                 @default(0)
   nTransacciones     Int                                   @default(0)
   createdAt          DateTime                              @default(now())

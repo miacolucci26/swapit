@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { zonaAprox } from "@/components/LoteCard";
+import ModosCuenta from "@/components/ModosCuenta";
 import { Badge, Btn, Card, Cargando, Estrellas, Field, inputCls, InsigniaDemo } from "@/components/ui";
 import { Icono, type NombreIcono } from "@/components/vis/Iconos";
 import { api, ApiError } from "@/lib/api";
@@ -63,7 +64,21 @@ function Identidad({ empresa, color, hijos }: { empresa: Empresa; color: string;
   );
 }
 
+/** Marketplace: primero los modos de la cuenta (comprador / vendedor); debajo, los datos de la cuenta. */
 export default function Perfil() {
+  const { user } = useSession();
+  if (user?.modo === "MARKETPLACE") {
+    return (
+      <>
+        <ModosCuenta />
+        <PerfilEmpresa />
+      </>
+    );
+  }
+  return <PerfilEmpresa />;
+}
+
+function PerfilEmpresa() {
   const { user, refresh } = useSession();
   const [nombre, setNombre] = useState("");
   const [empresa, setEmpresa] = useState<Empresa | null>(null);

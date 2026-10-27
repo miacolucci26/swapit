@@ -43,17 +43,44 @@ export const registroEmpresaSchema = z.object({
   usuario: usuarioRegistroSchema,
 });
 
+// ---------- Modos comprador / vendedor (docs/diseno/estructura-web.md) ----------
+/** Modo de uso del marketplace. Una cuenta puede tener los dos, pero cada uno se activa registrándose en él. */
+export const ModoUso = ['COMPRADOR', 'VENDEDOR'] as const;
+export type ModoUso = (typeof ModoUso)[number];
+
+export const MetodoCobro = ['YAPE', 'PLIN', 'TRANSFERENCIA'] as const;
+
+/** Datos extra que pide el modo vendedor: su tienda y cómo cobra. */
+export const tiendaSchema = z.object({
+  nombre: z.string().trim().min(3, 'Escribe el nombre de tu tienda').max(80),
+  cobroMetodo: z.enum(MetodoCobro),
+  cobroCuenta: z.string().trim().min(6, 'Escribe el número o la cuenta donde cobras').max(40),
+  telefono: telefonoContactoOpcional,
+});
+export type TiendaInput = z.infer<typeof tiendaSchema>;
+
+/** «Registrarme como vendedor / comprador» desde el perfil: solo los datos que faltan, sin repetir el registro. */
+export const activarModoSchema = z.discriminatedUnion('modo', [
+  z.object({ modo: z.literal('VENDEDOR'), tienda: tiendaSchema }),
+  z.object({ modo: z.literal('COMPRADOR') }),
+]);
+export type ActivarModoInput = z.infer<typeof activarModoSchema>;
+
 /** Persona natural: sin RUC, rubro ni KYB. Solo necesita su ubicación (barrio y ciudad) para ver lo que hay cerca. */
 export const registroPersonaSchema = z.object({
   tipo: z.literal('PERSONA'),
   persona: z.object({ direccion: z.string().min(5, 'Indica tu barrio y ciudad (ej. «Urb. San Eduardo, Piura»)').max(250) }),
+  /** Modo con el que se registra. Sin él la cuenta queda con los dos (formato anterior de la API). */
+  modo: z.enum(ModoUso).optional(),
+  /** Obligatorio si `modo` es VENDEDOR. */
+  tienda: tiendaSchema.optional(),
   usuario: usuarioRegistroSchema.extend({
     nombre: z
       .string()
       .max(120)
       .refine((n) => n.trim().split(/\s+/).length >= 2, 'Escribe tu nombre y apellido'),
   }),
-});
+}).refine((v) => v.modo !== 'VENDEDOR' || !!v.tienda, { message: 'Completa los datos de tu tienda', path: ['tienda'] });
 
 /** `tipo` es opcional por compatibilidad: sin él se asume EMPRESA (formato anterior de la API). */
 export const registroSchema = z.preprocess(
@@ -85,6 +112,8 @@ export const actualizarEmpresaSchema = z.object({
   // Solo un archivo subido a la plataforma o una URL https: nunca javascript:, data: ni rutas relativas arbitrarias.
   logoUrl: z.string().max(300).regex(/^(\/api\/uploads\/[A-Za-z0-9._-]+|https:\/\/[^\s"'<>]+)$/, 'Logo inválido').optional(),
   colorMarca: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Usa un color hexadecimal, ej. #047857').optional(),
+  /** Solo cuentas con modo vendedor: nombre de la tienda y datos de cobro. */
+  tienda: tiendaSchema.optional(),
 });
 export type ActualizarEmpresaInput = z.infer<typeof actualizarEmpresaSchema>;
 
@@ -94,6 +123,12 @@ export const certificacionSchema = z.object({
 
 // ---------- Lotes ----------
 import { Modalidad, FrecuenciaLote, UnidadLote, CondicionLote, EntregaLote } from './enums';
+
+/** Punto en el mapa, acotado al Perú (un pin fuera del país es un error de la interfaz). */
+export const puntoSchema = z.object({
+  lat: z.number().min(-18.5).max(0.1),
+  lng: z.number().min(-81.5).max(-68.5),
+});
 
 export const crearLoteSchema = z.object({
   categoriaCodigo: z.string().min(2),
@@ -115,8 +150,20 @@ export const crearLoteSchema = z.object({
   iaSugerencia: z.unknown().optional(),
   // Solo aplica a modalidad INTERCAMBIO: qué categorías/ítems aceptaría el publicador a cambio.
   notaIntercambio: z.string().max(300).optional(),
+  /** Pin que el vendedor pone en el mapa. Sin él se usa la ubicación de su cuenta. */
+  ubicacion: puntoSchema.optional(),
 });
 export type CrearLoteInput = z.infer<typeof crearLoteSchema>;
+
+/** «Mis productos» → Editar: lo que el vendedor puede cambiar de una publicación. */
+export const editarLoteSchema = z.object({
+  titulo: z.string().min(5).max(140).optional(),
+  descripcion: z.string().min(10).max(2000).optional(),
+  precio: z.number().nonnegative().max(1_000_000).optional(),
+  cantidadDisponible: z.number().nonnegative().max(1_000_000).optional(),
+  ubicacion: puntoSchema.optional(),
+});
+export type EditarLoteInput = z.infer<typeof editarLoteSchema>;
 
 export const clasificarSchema = z.object({
   descripcion: z.string().min(3).max(2000),

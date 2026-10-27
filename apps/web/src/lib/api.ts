@@ -23,7 +23,11 @@ export interface UsuarioSesion {
   nombre: string;
   email: string;
   rol: "EMPRESA" | "ADMIN";
-  empresa: { id: string; tipo: "EMPRESA" | "PERSONA"; ruc: string | null; razonSocial: string; rol: string; estadoKyb: string };
+  empresa: {
+    id: string; tipo: "EMPRESA" | "PERSONA"; ruc: string | null; razonSocial: string; rol: string; estadoKyb: string;
+    /** Modo vendedor: nombre de la tienda y cómo cobra. */
+    nombreTienda?: string | null; cobroMetodo?: string | null; cobroCuenta?: string | null;
+  };
   /** Modo de la plataforma: B2B2B (intermediarios, por defecto) o MARKETPLACE (producto anterior). */
   modo: "B2B2B" | "MARKETPLACE";
 }

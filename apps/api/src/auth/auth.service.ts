@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, HttpExcepti
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { nombrePublico, type LoginInput, type RegistroInput } from '@swapit/shared';
+import { datosTienda } from '../empresas/empresas.service';
 import { anotar, excedido, olvidar, tope } from '../common/limite-tasa';
 import { modo } from '../common/modo';
 import { EmpresasService } from '../empresas/empresas.service';
@@ -74,9 +75,11 @@ export class AuthService {
             tipo: 'PERSONA' as const,
             // Nombre visible para terceros: sin apellido completo. El nombre real queda solo en el usuario.
             razonSocial: nombrePublico(input.usuario.nombre),
-            rol: 'AMBOS' as const,
+            // Cada modo se activa solo si la persona se registra en él; sin modo (API anterior) quedan los dos.
+            rol: input.modo === 'COMPRADOR' ? ('RECEPTOR' as const) : input.modo === 'VENDEDOR' ? ('OFERTANTE' as const) : ('AMBOS' as const),
             direccion: input.persona.direccion,
             estadoKyb: 'NO_APLICA' as const,
+            ...(input.tienda ? datosTienda(input.tienda) : {}),
           };
     const usuario = await this.prisma.usuario.create({
       data: { email, nombre: input.usuario.nombre, passwordHash, empresa: { create: cuenta } },

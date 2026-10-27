@@ -1,10 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import type { CrearLoteInput } from '@swapit/shared';
+import type { CrearLoteInput, EditarLoteInput } from '@swapit/shared';
 import { Embedder, aVectorSql } from '../common/embeddings/embedder';
 import { aToneladas, ETIQUETA_UNIDAD, type UnidadLote } from '@swapit/shared';
 import { empresasReveladas, enmascararFila } from '../common/confidencial';
 import { estimarFlete } from '../common/flete';
+import { Geocoder } from '../common/geocoding/geocoder';
 import { urlArchivo } from '../common/uploads';
 import { IaService } from '../ia/ia.service';
 import { MatchingService } from '../matching/matching.service';
@@ -31,7 +32,7 @@ const SELECT_LOTE = Prisma.sql`
   l."precioReferencia", l."aceptaCreditos", l.frecuencia, l.estado, l."destacadoHasta", l."createdAt", l."iaSugerencia",
   l."notaIntercambio", l.condicion, l.entrega,
   c.codigo AS "categoriaCodigo", c.nombre AS "categoriaNombre", c.sector, c."kgPorUnidad",
-  e.id AS "empresaId", e.tipo AS "tipoPublicador", e."razonSocial", e."ratingProm", e."nTransacciones", e."estadoKyb", e."badgeCircular", e.confidencial, e."esDemo" AS demo,
+  e.id AS "empresaId", e.tipo AS "tipoPublicador", COALESCE(e."nombreTienda", e."razonSocial") AS "razonSocial", e."ratingProm", e."nTransacciones", e."estadoKyb", e."badgeCircular", e.confidencial, e."esDemo" AS demo,
   ST_Y(l.ubicacion::geometry) AS lat, ST_X(l.ubicacion::geometry) AS lng,
   CASE WHEN o.ub IS NULL OR l.ubicacion IS NULL THEN NULL ELSE ST_Distance(l.ubicacion, o.ub) / 1000.0 END AS "distanciaKm"`;
 
@@ -42,6 +43,7 @@ export class LotesService {
     private readonly embedder: Embedder,
     private readonly ia: IaService,
     private readonly matching: MatchingService,
+    private readonly geocoder: Geocoder,
   ) {}
 
   private async tarifa() {
@@ -87,10 +89,24 @@ export class LotesService {
         imagenes: { create: input.imagenes.map((n, i) => ({ url: urlArchivo(n), orden: i })) },
       },
     });
-    await this.prisma.$executeRaw`UPDATE "Lote" SET ubicacion = (SELECT ubicacion FROM "Empresa" WHERE id = ${empresaId}) WHERE id = ${lote.id}`;
+    if (input.ubicacion) await this.ubicar(lote.id, input.ubicacion, empresa.tipo);
+    else await this.prisma.$executeRaw`UPDATE "Lote" SET ubicacion = (SELECT ubicacion FROM "Empresa" WHERE id = ${empresaId}) WHERE id = ${lote.id}`;
     await this.indexar(lote.id);
     await this.matching.evaluarLote(lote.id).catch(() => undefined);
     return this.detalle(lote.id, empresaId);
+  }
+
+  /** Guarda el pin que puso el vendedor. De una persona se guarda aproximado (~1 km), igual que su cuenta. */
+  private async ubicar(loteId: string, p: { lat: number; lng: number }, tipo: string) {
+    const lat = tipo === 'PERSONA' ? Math.round(p.lat * 100) / 100 : p.lat;
+    const lng = tipo === 'PERSONA' ? Math.round(p.lng * 100) / 100 : p.lng;
+    await this.prisma.$executeRaw`UPDATE "Lote" SET ubicacion = ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography WHERE id = ${loteId}`;
+  }
+
+  /** «Escribe la dirección y el mapa se ubica solo» (formulario de Publicar). */
+  async geocodificar(direccion: string) {
+    const c = await this.geocoder.geocodificar(direccion);
+    return c ? { lat: c.lat, lng: c.lng, aproximada: c.fuente === 'aproximada' } : null;
   }
 
   /** Calcula y guarda el embedding del lote (pgvector). */
@@ -158,6 +174,34 @@ export class LotesService {
     if (activas) throw new BadRequestException('El lote tiene transacciones en curso');
     await this.prisma.lote.update({ where: { id }, data: { estado: 'RETIRADO' } });
     return { ok: true };
+  }
+
+  /** Lote propio que aún se puede cambiar (ni borrado ni cerrado). */
+  private async propio(id: string, empresaId: string) {
+    const l = await this.prisma.lote.findUnique({ where: { id }, include: { empresa: { select: { tipo: true } } } });
+    if (!l || ESTADOS_PRIVADOS.has(l.estado)) throw new NotFoundException('Lote no encontrado');
+    if (l.empresaId !== empresaId) throw new ForbiddenException();
+    if (l.estado === 'RETIRADO' || l.estado === 'CERRADO') throw new BadRequestException('Esta publicación ya no se puede modificar');
+    return l;
+  }
+
+  async editar(id: string, empresaId: string, input: EditarLoteInput) {
+    const l = await this.propio(id, empresaId);
+    const { ubicacion, ...datos } = input;
+    if (datos.precio !== undefined && (l.modalidad === 'DONACION' || l.modalidad === 'INTERCAMBIO')) delete datos.precio;
+    if (datos.cantidadDisponible !== undefined && datos.cantidadDisponible > l.cantidad) datos.cantidadDisponible = l.cantidad;
+    await this.prisma.lote.update({ where: { id }, data: datos });
+    if (ubicacion) await this.ubicar(id, ubicacion, l.empresa.tipo);
+    if (datos.titulo || datos.descripcion) await this.indexar(id);
+    return this.detalle(id, empresaId);
+  }
+
+  /** Pausar oculta la publicación del marketplace sin borrarla; reanudar la vuelve a mostrar. */
+  async pausar(id: string, empresaId: string, pausado: boolean) {
+    const l = await this.propio(id, empresaId);
+    if (pausado ? l.estado !== 'PUBLICADO' : l.estado !== 'PAUSADO') throw new BadRequestException(pausado ? 'Solo se pausa una publicación activa' : 'La publicación no está pausada');
+    await this.prisma.lote.update({ where: { id }, data: { estado: pausado ? 'PAUSADO' : 'PUBLICADO' } });
+    return this.detalle(id, empresaId);
   }
 
   private async enriquecer(filas: any[], viewerEmpresaId?: string) {

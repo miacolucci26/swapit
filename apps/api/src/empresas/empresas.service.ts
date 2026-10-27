@@ -1,12 +1,20 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
-import { nombrePublico, type ActualizarEmpresaInput, type ActualizarProveedorInput, type CrearProveedorInput } from '@swapit/shared';
+import { nombrePublico, type ActivarModoInput, type ActualizarEmpresaInput, type ActualizarProveedorInput, type CrearProveedorInput, type TiendaInput } from '@swapit/shared';
 import { Geocoder } from '../common/geocoding/geocoder';
 import { SunatValidator, metodoVerificacionActual, type MetodoVerificacion } from '../common/sunat/sunat.validator';
 import type { JwtPayload } from '../auth/auth.guard';
 import { aproximar, debeOcultar, empresasReveladas, nombreConfidencial } from '../common/confidencial';
 import { PrismaService } from '../prisma/prisma.service';
+
+/** Columnas de la tienda del vendedor (registro o activación del modo vendedor). */
+export const datosTienda = (t: TiendaInput) => ({
+  nombreTienda: t.nombre,
+  cobroMetodo: t.cobroMetodo,
+  cobroCuenta: t.cobroCuenta,
+  ...(t.telefono ? { telefono: t.telefono } : {}),
+});
 
 @Injectable()
 export class EmpresasService {
@@ -99,7 +107,11 @@ export class EmpresasService {
 
   async actualizar(empresaId: string, input: ActualizarEmpresaInput) {
     const actual = await this.prisma.empresa.findUniqueOrThrow({ where: { id: empresaId } });
-    const { nombre, ...resto } = input;
+    const { nombre, tienda, ...resto } = input;
+    if (tienda) {
+      if (actual.rol !== 'OFERTANTE' && actual.rol !== 'AMBOS') throw new BadRequestException('Activa el modo vendedor para registrar una tienda.');
+      await this.prisma.empresa.update({ where: { id: empresaId }, data: datosTienda(tienda) });
+    }
     if (actual.tipo === 'PERSONA') {
       // Una persona solo edita su nombre y su ubicación; razón social, rubro y rol no aplican.
       const data: { direccion?: string; razonSocial?: string } = {};
@@ -133,10 +145,26 @@ export class EmpresasService {
       this.perfil(empresaId),
       this.prisma.empresa.findUniqueOrThrow({
         where: { id: empresaId },
-        select: { ruc: true, representanteLegal: true, direccion: true, contactoNombre: true, telefono: true },
+        select: { ruc: true, representanteLegal: true, direccion: true, contactoNombre: true, telefono: true, nombreTienda: true, cobroMetodo: true, cobroCuenta: true },
       }),
     ]);
     return { ...publico, ...privado };
+  }
+
+  /**
+   * «Registrarme como vendedor / comprador» desde el perfil: la misma cuenta suma el otro modo (rol AMBOS).
+   * No crea otro usuario ni repite el registro; el modo vendedor solo pide los datos de tienda y cobro.
+   */
+  async activarModo(empresaId: string, input: ActivarModoInput) {
+    const e = await this.prisma.empresa.findUniqueOrThrow({ where: { id: empresaId }, select: { rol: true } });
+    if (e.rol === 'INTERMEDIARIO' || e.rol === 'GENERADOR') throw new BadRequestException('Esta cuenta no usa los modos comprador y vendedor.');
+    const tiene = input.modo === 'VENDEDOR' ? e.rol !== 'RECEPTOR' : e.rol !== 'OFERTANTE';
+    if (tiene) throw new BadRequestException(`Tu cuenta ya tiene el modo ${input.modo === 'VENDEDOR' ? 'vendedor' : 'comprador'}.`);
+    await this.prisma.empresa.update({
+      where: { id: empresaId },
+      data: { rol: 'AMBOS', ...(input.modo === 'VENDEDOR' ? datosTienda(input.tienda) : {}) },
+    });
+    return this.miEmpresa(empresaId);
   }
 
   /**

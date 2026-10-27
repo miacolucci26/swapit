@@ -29,7 +29,7 @@ const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 // Mapa base: OpenFreeMap (vectorial, gratuito y SIN clave; datos © OpenStreetMap). CARTO dejó de servir sus teselas
 // raster sin API key (mostraba «API KEY REQUIRED»). Con NEXT_PUBLIC_MAPBOX_TOKEN se usa Mapbox.
 const ESTILO_LIBRE = "https://tiles.openfreemap.org/styles/positron";
-const ESTILO: string | maplibregl.StyleSpecification = TOKEN
+export const ESTILO: string | maplibregl.StyleSpecification = TOKEN
   ? {
       version: 8,
       glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
