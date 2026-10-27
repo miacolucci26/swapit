@@ -25,7 +25,7 @@ export default function Chats() {
           accion={modoUso === "comprador" ? <LinkBtn href="/lotes">Ir al marketplace</LinkBtn> : undefined}
         />
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-white shadow-card">
+        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl">
           {abiertos.map((t) => (
             <li key={t.id}>
               <Link href={`/transacciones/${t.id}`} className="flex items-center gap-3 px-3 py-3 transition hover:bg-surface-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-nav-600">

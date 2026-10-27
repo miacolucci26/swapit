@@ -109,7 +109,7 @@ export default function ModosCuenta() {
     const tiene = modos.includes(modo);
     const actual = modoUso === modo;
     return (
-      <div className={`flex flex-col gap-3 rounded-card border bg-white p-4 shadow-card ${actual ? "border-nav-600" : "border-line"}`}>
+      <div className={`flex flex-col gap-3 rounded-2xl border bg-white/80 p-4 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl ${actual ? "border-emerald-500/60 ring-1 ring-emerald-500/20" : "border-zinc-200/80"}`}>
         <div className="flex items-center gap-2">
           <Icono nombre={modo === "vendedor" ? "tienda" : "usuario"} size={20} className="text-nav-700" />
           <h3 className="flex-1 font-semibold text-nav-900">Modo {ETIQUETA_MODO[modo].toLowerCase()}</h3>
@@ -156,7 +156,7 @@ export default function ModosCuenta() {
 
   return (
     <section ref={caja} aria-labelledby="perfil-titulo" className="mb-6 scroll-mt-20">
-      <div className="mb-4 flex flex-wrap items-center gap-4 rounded-card border border-line bg-white p-4 shadow-card">
+      <div className="mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4">
         <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-nav-700 text-2xl font-semibold text-white">{user.nombre.charAt(0).toUpperCase()}</span>
         <div className="min-w-0 flex-1">
           <h1 id="perfil-titulo" className="truncate text-xl font-semibold text-nav-900">{user.nombre}</h1>

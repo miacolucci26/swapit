@@ -44,7 +44,7 @@ export function PrecioGrande({ l, className = "text-xl" }: { l: Pick<Lote, "moda
 /** Tarjeta del marketplace: foto, título, precio bien visible, tienda, zona y corazón. */
 export default function TarjetaOferta({ l }: { l: Lote }) {
   return (
-    <div className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition hover:-translate-y-0.5 hover:border-nav-500 hover:shadow-lg">
+    <div className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl transition duration-200 hover:-translate-y-1 hover:border-emerald-400/70 hover:shadow-[0_8px_30px_-12px_rgba(16,185,129,0.45)]">
       <Link href={`/lotes/${l.id}`} className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-nav-600">
         <div className="relative aspect-square overflow-hidden bg-surface-2 sm:aspect-[4/3]">
           <FotoLote l={l} className="transition duration-300 group-hover:scale-[1.03]" />

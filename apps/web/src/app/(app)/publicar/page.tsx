@@ -141,7 +141,7 @@ function Formulario() {
     <div className="mx-auto max-w-3xl">
       <PageHeader titulo="Publicar" sub="Fotos, título, precio, descripción y dónde está el producto." />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
-        <section className="rounded-card border border-line bg-white p-4 shadow-card sm:p-5">
+        <section className="rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4 sm:p-5">
           <h2 className="mb-3 text-sm font-semibold text-nav-900">Fotos <span className="font-normal text-ink-500">(hasta {MAX_FOTOS})</span></h2>
           <div className="flex flex-wrap gap-3">
             {fotos.map((x) => (
@@ -162,7 +162,7 @@ function Formulario() {
           </div>
         </section>
 
-        <section className="grid gap-4 rounded-card border border-line bg-white p-4 shadow-card sm:grid-cols-2 sm:p-5">
+        <section className="grid gap-4 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4 sm:grid-cols-2 sm:p-5">
           <div className="sm:col-span-2">
             <Field label="Título"><input name="titulo" required minLength={5} maxLength={140} placeholder="Ej. Silla de madera en buen estado" className={inputCls} /></Field>
           </div>
@@ -190,7 +190,7 @@ function Formulario() {
           </div>
         </section>
 
-        <section className="rounded-card border border-line bg-white p-4 shadow-card sm:p-5">
+        <section className="rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4 sm:p-5">
           <h2 className="text-sm font-semibold text-nav-900">Ubicación</h2>
           <p className="mb-3 text-xs text-ink-500">Mueve el pin (o toca el mapa) hasta donde está el producto. Los compradores solo ven la zona aproximada.</p>
           <div className="mb-3 flex gap-2">

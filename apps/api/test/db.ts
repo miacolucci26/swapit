@@ -1,3 +1,5 @@
+// Las suites sin modo fijado son de la herramienta para acopiadores (el código ya no la usa por defecto).
+process.env.SWAPIT_MODO ??= 'B2B2B';
 /**
  * Postgres REAL en memoria para pruebas (PGlite + PostGIS + pgvector), con las migraciones de prisma/migrations.
  * Así las consultas espaciales y de vectores se prueban de verdad, sin Docker.

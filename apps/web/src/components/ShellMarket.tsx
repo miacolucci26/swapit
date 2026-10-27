@@ -59,9 +59,9 @@ function ChipModo() {
         } else router.push(`/perfil?activar=${otro}`);
       }}
       title={puede ? `Cambiar a modo ${ETIQUETA_MODO[otro].toLowerCase()}` : `Registrarme como ${ETIQUETA_MODO[otro].toLowerCase()}`}
-      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-xs font-semibold text-nav-800 transition hover:border-nav-500"
+      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-zinc-200/80 bg-white/70 px-3 text-xs font-semibold text-zinc-800 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset] backdrop-blur-xl transition hover:bg-zinc-100"
     >
-      <span aria-hidden="true" className={`size-2 rounded-full ${modoUso === "vendedor" ? "bg-ambar-500" : "bg-pri-600"}`} />
+      <span aria-hidden="true" className={`size-2 rounded-full ${modoUso === "vendedor" ? "bg-amber-500" : "bg-emerald-500"}`} />
       {ETIQUETA_MODO[modoUso]}
       <span className="sr-only">. {puede ? `Cambiar a modo ${ETIQUETA_MODO[otro].toLowerCase()}` : `Registrarme como ${ETIQUETA_MODO[otro].toLowerCase()}`}</span>
     </button>
@@ -96,7 +96,7 @@ function Estructura({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 lg:px-8">
           <Link href="/lotes" aria-label="Ir al marketplace" className="shrink-0"><Logo tamano={30} enlace={false} /></Link>
           <Buscador className="order-last w-full sm:order-none sm:w-auto sm:flex-1" />
@@ -125,7 +125,7 @@ export function RequiereModo({ modo, children }: { modo: ModoUso; children: Reac
   if (modoUso === modo) return <>{children}</>;
   const tiene = modos.includes(modo);
   return (
-    <div className="mx-auto max-w-md rounded-card border border-line bg-white p-6 text-center shadow-card">
+    <div className="mx-auto max-w-md rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-6 text-center">
       <Icono nombre={modo === "vendedor" ? "tienda" : "usuario"} size={28} className="mx-auto text-nav-700" />
       <h1 className="mt-2 text-lg font-semibold text-nav-900">Esta sección es del modo {ETIQUETA_MODO[modo].toLowerCase()}</h1>
       <p className="mt-1 text-sm text-ink-500">

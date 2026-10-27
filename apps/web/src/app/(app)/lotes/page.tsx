@@ -29,7 +29,7 @@ function etiquetaPin(l: Lote) {
 /** Mini tarjeta de la oferta elegida en el mapa. */
 function MiniTarjeta({ l, onCerrar }: { l: Lote; onCerrar: () => void }) {
   return (
-    <div className="flex gap-3 rounded-card border border-line bg-white p-2.5 shadow-lg">
+    <div className="flex gap-3 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-2.5">
       <Link href={`/lotes/${l.id}`} className="size-24 shrink-0 overflow-hidden rounded-control bg-surface-2"><FotoLote l={l} /></Link>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Link href={`/lotes/${l.id}`} className="line-clamp-2 text-sm font-medium text-ink-900 hover:underline">{l.titulo}</Link>
@@ -129,7 +129,7 @@ export default function Marketplace() {
         <Vacio titulo="No pudimos cargar las ofertas" texto="Puede ser un corte momentáneo de la conexión." accion={<Btn onClick={() => setIntento((n) => n + 1)}>Reintentar</Btn>} />
       ) : !ordenados ? (
         <div role="status" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {Array.from({ length: 8 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-card border border-line bg-white" />)}
+          {Array.from({ length: 8 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl" />)}
           <span className="sr-only">Cargando ofertas…</span>
         </div>
       ) : ordenados.length === 0 ? (

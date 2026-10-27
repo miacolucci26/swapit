@@ -42,7 +42,7 @@ function Contenido() {
         ]}
       />
 
-      <section className="mb-5 flex flex-wrap items-center gap-3 rounded-card border border-line bg-white p-4 shadow-card">
+      <section className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4">
         <Icono nombre="dinero" size={22} className="text-pri-700" />
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-nav-900">Dónde cobras</h2>

@@ -9,7 +9,7 @@ export type Modo = "B2B2B" | "MARKETPLACE";
 export function useModo(): Modo | null {
   const [modo, setModo] = useState<Modo | null>(null);
   useEffect(() => {
-    api<{ modo: Modo }>("/health").then((h) => setModo(h.modo)).catch(() => setModo("B2B2B"));
+    api<{ modo: Modo }>("/health").then((h) => setModo(h.modo)).catch(() => setModo("MARKETPLACE"));
   }, []);
   return modo;
 }

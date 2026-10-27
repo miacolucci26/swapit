@@ -93,3 +93,14 @@ test('el chat del comprador muestra el nombre de la tienda', async () => {
   const lista = (await compradora.get('/transacciones')).data;
   assert.equal(lista[0].contraparte.razonSocial, 'Bazar de Rosa');
 });
+
+test('al arrancar, la API completa sola el esquema de modos si la base aún no lo tiene (despliegue sin migrar)', async () => {
+  const prisma = app.get(PrismaService);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "Empresa" DROP COLUMN "nombreTienda", DROP COLUMN "cobroMetodo", DROP COLUMN "cobroCuenta"`);
+  await prisma.onModuleInit();
+  const cols = await prisma.$queryRawUnsafe<{ column_name: string }[]>(
+    `SELECT column_name FROM information_schema.columns WHERE table_name = 'Empresa' AND column_name IN ('nombreTienda', 'cobroMetodo', 'cobroCuenta')`,
+  );
+  assert.equal(cols.length, 3);
+  assert.equal((await new Cliente(base).post('/auth/login', { email: 'rosa@test.pe', password: 'clave-segura-1' })).status, 200);
+});

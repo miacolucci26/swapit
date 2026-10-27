@@ -65,7 +65,7 @@ export default function MenuBolita({ opciones }: { opciones: Opcion[] }) {
         aria-controls="menu-bolita"
         aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
         title="Menú"
-        className={`relative grid size-12 place-items-center rounded-full text-white shadow-lg ring-4 ring-white transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nav-600 ${abierto ? "rotate-12 bg-nav-900" : "bg-pri-600 hover:bg-pri-700"}`}
+        className={`relative grid size-12 place-items-center rounded-full text-white ring-4 ring-white/80 transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nav-600 ${abierto ? "rotate-12 bg-zinc-700" : "bg-zinc-900 hover:bg-zinc-700"} shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_8px_24px_-6px_rgba(24,24,27,0.45)]`}
       >
         <Icono nombre={abierto ? "cerrar" : "tienda"} size={22} />
         {!abierto && avisos > 0 && (
@@ -89,11 +89,11 @@ export default function MenuBolita({ opciones }: { opciones: Opcion[] }) {
                   aria-current={activo ? "page" : undefined}
                   className="group/op flex items-center gap-2 focus-visible:outline-none"
                 >
-                  <span className="pointer-events-none whitespace-nowrap rounded-lg bg-nav-900 px-2.5 py-1 text-xs font-semibold text-white opacity-0 shadow-md transition group-hover/op:opacity-100 group-focus-visible/op:opacity-100 [@media(hover:none)]:opacity-100">
+                  <span className="pointer-events-none whitespace-nowrap rounded-lg bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white opacity-0 shadow-[0_8px_24px_-8px_rgba(24,24,27,0.45)] transition group-hover/op:opacity-100 group-focus-visible/op:opacity-100 [@media(hover:none)]:opacity-100">
                     {o.etiqueta}
                   </span>
                   <span
-                    className={`relative grid size-11 shrink-0 place-items-center rounded-full shadow-md ring-1 transition group-hover/op:scale-110 group-focus-visible/op:outline-2 group-focus-visible/op:outline-offset-2 group-focus-visible/op:outline-nav-600 ${activo ? "bg-nav-900 text-white ring-nav-900" : "bg-white text-nav-800 ring-black/10"}`}
+                    className={`relative grid size-11 shrink-0 place-items-center rounded-full shadow-md ring-1 transition group-hover/op:scale-110 group-focus-visible/op:outline-2 group-focus-visible/op:outline-offset-2 group-focus-visible/op:outline-nav-600 ${activo ? "bg-zinc-900 text-white ring-zinc-900" : "bg-white/90 text-zinc-800 ring-zinc-200/80 backdrop-blur-xl"}`}
                   >
                     <Icono nombre={o.icono} size={20} />
                     {!!o.aviso && (

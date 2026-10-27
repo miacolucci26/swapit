@@ -86,7 +86,7 @@ Plantilla completa y comentada: [`.env.example`](../.env.example). En Vercel mar
 | `WEB_ORIGIN` | api | no | URL pública de la web (CORS, CSRF, cookies); `https` |
 | `TRUST_PROXY` | api | no | `1` en Vercel (IP real para los límites de uso) |
 | `REGISTRO_ABIERTO` | api | no | `false` cierra el registro público (ver §7) |
-| `SWAPIT_MODO` | api | no | `MARKETPLACE` (intercambio entre empresas) o `B2B2B` (acopiadores) |
+| `SWAPIT_MODO` | api | no | Vacío o `MARKETPLACE` (por defecto): marketplace comprador/vendedor. `B2B2B`: herramienta para acopiadores |
 | `STORAGE_DRIVER` | api | no | `supabase` en producción (`local` solo desarrollo) |
 | `SUPABASE_URL` | api | no | URL del proyecto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | api | **Sí** | Escribir en Storage (clave de servicio) |

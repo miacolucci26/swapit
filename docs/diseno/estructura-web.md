@@ -141,7 +141,7 @@ Inicio (frase + 2 botones)
 
 ## 8. Pendientes por definir
 
-- [ ] Texto de la frase de inicio. *(Provisional: «Lo que a ti te sobra, a alguien le sirve.» en `components/InicioMarket.tsx`.)*
+- [ ] Texto de la frase de inicio. *(Hoy: se mantiene el hero día/noche de la portada; sus dos botones son «Ingresar como Comprador» y «Ingresar como Vendedor» — `components/vis/HeroDiaNoche.tsx`.)*
 - [ ] Tipo de productos que se van a vender.
 - [ ] Si habrá categorías o solo buscador + mapa. *(Hoy: buscador + mapa en el marketplace; la categoría solo se pide al publicar porque la API la necesita.)*
 - [ ] Cómo se maneja el pago: ¿botón "Comprar" o solo contacto por chat? *(Hoy: «Chatear con el vendedor»; el pago en garantía simulado sigue dentro del chat.)*
@@ -154,7 +154,7 @@ Inicio (frase + 2 botones)
 
 | Pieza | Archivo (`apps/web/src`) |
 |---|---|
-| Inicio (frase + 2 botones) | `components/InicioMarket.tsx` |
+| Inicio (hero + 2 botones) | `components/LandingB2B.tsx`, `components/vis/HeroDiaNoche.tsx` |
 | Ingreso y registro por modo (`?modo=comprador\|vendedor`) | `app/login/page.tsx`, `app/registro/page.tsx` |
 | Modo activo y modos de la cuenta | `lib/modoUso.ts`, `lib/session.tsx` |
 | Barra superior + bolita | `components/ShellMarket.tsx`, `components/MenuBolita.tsx` |
@@ -164,4 +164,4 @@ Inicio (frase + 2 botones)
 | Perfil y «Registrarme como…» | `components/ModosCuenta.tsx` |
 | Mis compras · Finanzas · Chats · Favoritos · Mis productos | `app/(app)/compras`, `finanzas`, `chats`, `favoritos`, `mis-productos` |
 
-Reglas en la API: comprador = rol `RECEPTOR`, vendedor = `OFERTANTE`, los dos = `AMBOS`. `POST /empresas/mi/activar-modo` suma el otro modo a la misma cuenta. Una publicación pausada tiene estado `PAUSADO` (migración `0013`). Los favoritos se guardan por ahora en el navegador.
+Reglas en la API: comprador = rol `RECEPTOR`, vendedor = `OFERTANTE`, los dos = `AMBOS`. `POST /empresas/mi/activar-modo` suma el otro modo a la misma cuenta. Una publicación pausada tiene estado `PAUSADO` (migración `0013`, que la API también aplica sola al arrancar si falta). El marketplace es el modo por defecto; la herramienta para acopiadores queda con `SWAPIT_MODO=B2B2B`. Los favoritos se guardan por ahora en el navegador.

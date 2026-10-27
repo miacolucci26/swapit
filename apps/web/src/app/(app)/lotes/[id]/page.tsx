@@ -32,7 +32,7 @@ function Galeria({ l }: { l: Lote }) {
   const fotos = l.imagenes;
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative aspect-square overflow-hidden rounded-card border border-line bg-surface-2 sm:aspect-[4/3]">
+      <div className="relative aspect-square overflow-hidden rounded-2xl border border-zinc-200/80 bg-surface-2 sm:aspect-[4/3]">
         <FotoLote l={l} src={fotos[i] ?? null} />
         <BotonFavorito loteId={l.id} titulo={l.titulo} className="absolute right-3 top-3" />
         {fotos.length > 1 && (
@@ -149,13 +149,13 @@ export default function DetalleProducto() {
             )}
           </div>
 
-          <section aria-labelledby="desc" className="rounded-card border border-line bg-white p-4 shadow-card">
+          <section aria-labelledby="desc" className="rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4">
             <h2 id="desc" className="text-sm font-semibold text-nav-900">Descripción</h2>
             <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-ink-700">{l.descripcion}</p>
             {entrega && <p className="mt-3 flex items-center gap-1.5 text-sm text-ink-700"><Icono nombre="camion" size={16} className="text-ink-500" />{entrega.etiqueta}</p>}
           </section>
 
-          <section aria-labelledby="vendedor" className="flex items-center gap-3 rounded-card border border-line bg-white p-4 shadow-card">
+          <section aria-labelledby="vendedor" className="flex items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4">
             <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-full bg-nav-700 text-lg font-semibold text-white">{l.razonSocial.charAt(0)}</span>
             <div className="min-w-0 flex-1">
               <h2 id="vendedor" className="text-xs font-medium text-ink-500">Vendedor</h2>
