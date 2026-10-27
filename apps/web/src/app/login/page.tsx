@@ -140,7 +140,7 @@ export default function LoginPage() {
             ))}
           </ul>
         </section>
-        {modo !== "MARKETPLACE" && modo !== null && (
+        {modo !== "MARKETPLACE" && (
           <p className="text-center text-sm text-zinc-500">¿Eres proveedor? Usa el enlace que te envió tu acopiador.</p>
         )}
       </main>

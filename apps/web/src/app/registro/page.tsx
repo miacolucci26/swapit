@@ -111,7 +111,6 @@ function RegistroIntermediario() {
 
 export default function RegistroPage() {
   const modo = useModo();
-  if (modo === null) return null;
   return modo === "MARKETPLACE" ? <RegistroMarketplace /> : <RegistroIntermediario />;
 }
 
