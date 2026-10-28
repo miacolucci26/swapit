@@ -354,7 +354,7 @@ async function main() {
     const { id, foto, fotos, ...datos } = l;
     // Foto real si existe (seed-fotos/<id>.jpg); si no, la ilustración de siempre.
     const real = prepararFotoReal(id);
-    const imagenes = real ? [real] : escribirImagenesDemo(`${clave}-${id}`, foto, colorDe(l.categoriaCodigo), fotos, l.titulo);
+    const imagenes = real ?? escribirImagenesDemo(`${clave}-${id}`, foto, colorDe(l.categoriaCodigo), fotos, l.titulo);
     if (subirImagenes) {
       for (const n of imagenes) await storage().guardar(n, readFileSync(join(UPLOADS_DIR, n)), real ? 'image/jpeg' : 'image/svg+xml').catch((e) => console.warn(`No se pudo subir ${n}: ${(e as Error).message}`));
     }

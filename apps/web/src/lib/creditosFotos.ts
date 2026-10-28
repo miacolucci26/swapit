@@ -1,7 +1,42 @@
-// Se completa con seed-fotos/creditos.json (fotos de demostración de Wikimedia Commons).
+// Generado desde apps/api/seed-fotos/creditos.json: fotos de demostración de Wikimedia Commons (licencias libres).
 export interface CreditoFoto { autor: string; licencia: string; pagina: string }
 
-export const CREDITOS_FOTOS: Record<string, CreditoFoto> = {};
+export const CREDITOS_FOTOS: Record<string, CreditoFoto> = {
+  "aceite": { autor: "Judgefloro", licencia: "CC0", pagina: "https://commons.wikimedia.org/wiki/File:9129Processing_and_cooking_of_coconut_healing_oil_in_the_Philippines_52.jpg" },
+  "arandano": { autor: "Evan-Amos", licencia: "CC0", pagina: "https://commons.wikimedia.org/wiki/File:Blueberries-In-Pack.jpg" },
+  "bagazo-cana": { autor: "Thamizhpparithi Maari", licencia: "CC BY-SA 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Sugarcane_bagasse.jpg" },
+  "banano": { autor: "Fredericknoronha", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Goa,_India._Bananas_in_a_bunch.jpg" },
+  "bidones": { autor: "SuSanA Secretariat", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/wiki/File:Step_5-_Placing_and_connecting_the_canisters_for_the_urine_collecting_(5012019830).jpg" },
+  "bigbags": { autor: "Cjp24", licencia: "CC BY-SA 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Flexible_intermediate_bulk_containers-Fertilizer.jpg" },
+  "cacao": { autor: "Rigues", licencia: "CC BY-SA 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Ripe_Cacao_Pods.jpg" },
+  "cachaza": { autor: "Bernard Dejean", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Compost_en_coupe.jpg" },
+  "cajas-mango": { autor: "Henry Söderlund", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/wiki/File:Cardboard_boxes_by_Henry_S%C3%B6derlund.jpg" },
+  "carton": { autor: "ליזי שאנן", licencia: "CC BY 2.5", pagina: "https://commons.wikimedia.org/wiki/File:95285_shorashim_group_PikiWiki_Israel.jpg" },
+  "carton-2": { autor: "Romy2702", licencia: "CC BY-SA 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Baal_door_Balenpers.jpg" },
+  "cascarilla": { autor: "Nick Hubbard", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/wiki/File:Rice_hulls_(5142989621).jpg" },
+  "chatarra": { autor: "Pöllö", licencia: "CC BY 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Steel_Mill_in_Koverhar.jpg" },
+  "esparrago": { autor: "terri_bateman", licencia: "CC0", pagina: "https://commons.wikimedia.org/wiki/File:Asparagus_harvest_(20279184531).jpg" },
+  "film": { autor: "Øyvind Holmstad", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Plasticulture_at_Toten_15-07-20.jpg" },
+  "film-agricola": { autor: "USDAgov", licencia: "Public domain", pagina: "https://commons.wikimedia.org/wiki/File:NRCS-EQIP_Water_Wise_Irrigation_at_Schirmer_Farms_(20200728-NRCS-LSC-0107).jpg" },
+  "film-cobertura": { autor: "Unknown authorUnknown author", licencia: "Public domain", pagina: "https://commons.wikimedia.org/wiki/File:Vegetables_grown_on_plastic_mulch.JPG" },
+  "jabas": { autor: "User:Nino Barbieri", licencia: "CC BY 2.5", pagina: "https://commons.wikimedia.org/wiki/File:Rectangular_plastic_shipping_crates_in_an_Italian_recycling_plant.jpg" },
+  "langostino": { autor: "W.carter", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Shrimp_shells_in_Tuntorp_2.jpg" },
+  "latas": { autor: "Radulf del Maresme", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Cans_recycling.jpg" },
+  "limon": { autor: "Rebecca Siegel", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/wiki/File:Lemon_zest.jpg" },
+  "mandarina": { autor: "Horacio Cambeiro", licencia: "CC BY-SA 3.0", pagina: "https://commons.wikimedia.org/wiki/File:Mandarins_harvested_in_Capiov%C3%AD,_Misiones,_Argentina.jpg" },
+  "mango": { autor: "Juan Emilio Prades Bel", licencia: "CC BY 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Mango,_frutas,_Mangifera.jpg" },
+  "pallets": { autor: "W.carter", licencia: "CC0", pagina: "https://commons.wikimedia.org/wiki/File:Wooden-pallets_stacked_8.jpg" },
+  "pet": { autor: "Grendelkhan", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Bales_of_PET_bottles_stacked.jpg" },
+  "pima-mermas": { autor: "পাপৰি বৰা", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:The_traditional_process_of_preparing_cotton_fiber.jpg" },
+  "pima-retazos": { autor: "Elinkorn", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Fabric_scraps.jpg" },
+  "polvillo": { autor: "No machine-readable author provided. Alistair1978 assumed (b", licencia: "CC BY-SA 2.5", pagina: "https://commons.wikimedia.org/wiki/File:WheatBran.jpg" },
+  "pota": { autor: "Imageman", licencia: "Public domain", pagina: "https://commons.wikimedia.org/wiki/File:Humboldt_squid_in_sink.JPG" },
+  "raquis-banano": { autor: "Anish Sheela", licencia: "CC BY 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Banana_Bunch.jpg" },
+  "tambores": { autor: "Ka23 13", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Diesel_fuel_20141012_112329.jpg" },
+  "uva": { autor: "W.carter", licencia: "CC0", pagina: "https://commons.wikimedia.org/wiki/File:Grape_harvest_in_Chateaux_Luna_vineyard_3.jpg" },
+  "valvas-enteras": { autor: "Thomas Quine", licencia: "CC BY 2.0", pagina: "https://commons.wikimedia.org/wiki/File:Scallop_shells_(29414975437).jpg" },
+  "valvas-trituradas": { autor: "ImagePerson", licencia: "CC BY-SA 4.0", pagina: "https://commons.wikimedia.org/wiki/File:Beach_Shells_Slovenia_9807.jpg" },
+};
 
 /** Crédito de una foto demo a partir de su URL (…/demo-foto-<id>.jpg); null para fotos subidas por usuarios. */
 export function creditoDeFoto(url?: string | null): CreditoFoto | null {

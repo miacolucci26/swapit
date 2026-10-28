@@ -10,15 +10,22 @@ import { storage } from '../storage/storage';
  */
 export const FOTOS_DIR = join(__dirname, '..', '..', 'seed-fotos');
 
-/** Nombre del archivo publicado para la oferta demo `id`. */
-export const nombreFoto = (id: string) => `demo-foto-${id}.jpg`;
+/** Fotos de la oferta demo `id`: <id>.jpg y, si hay, <id>-2.jpg, <id>-3.jpg (sin extensión, en orden). */
+export function fotosDe(id: string): string[] {
+  const r: string[] = [];
+  for (const f of [id, `${id}-2`, `${id}-3`]) if (existsSync(join(FOTOS_DIR, `${f}.jpg`))) r.push(f);
+  return r;
+}
 
-/** Copia la foto real de la oferta a UPLOADS_DIR y devuelve su nombre, o null si esa oferta no tiene foto. */
-export function prepararFotoReal(id: string): string | null {
-  const origen = join(FOTOS_DIR, `${id}.jpg`);
-  if (!existsSync(origen)) return null;
-  copyFileSync(origen, join(UPLOADS_DIR, nombreFoto(id)));
-  return nombreFoto(id);
+/** Nombre del archivo publicado para la foto `f` (p. ej. «carton-2»). */
+export const nombreFoto = (f: string) => `demo-foto-${f}.jpg`;
+
+/** Copia las fotos reales de la oferta a UPLOADS_DIR y devuelve sus nombres, o null si esa oferta no tiene fotos. */
+export function prepararFotoReal(id: string): string[] | null {
+  const fs = fotosDe(id);
+  if (!fs.length) return null;
+  for (const f of fs) copyFileSync(join(FOTOS_DIR, `${f}.jpg`), join(UPLOADS_DIR, nombreFoto(f)));
+  return fs.map(nombreFoto);
 }
 
 /**
@@ -31,18 +38,20 @@ export async function reemplazarIlustraciones(prisma: PrismaService) {
   const porLote = new Map<string, string>();
   for (const i of imgs) {
     const m = /demo-[a-z]+-(.+)-\d+\.svg$/.exec(i.url);
-    if (m && existsSync(join(FOTOS_DIR, `${m[1]}.jpg`))) porLote.set(i.loteId, m[1]);
+    if (m && fotosDe(m[1]).length) porLote.set(i.loteId, m[1]);
   }
   const subidas = new Set<string>();
   let n = 0;
   for (const [loteId, id] of porLote) {
-    if (!subidas.has(id)) {
-      await storage().guardar(nombreFoto(id), readFileSync(join(FOTOS_DIR, `${id}.jpg`)), 'image/jpeg');
-      subidas.add(id);
+    const fs = fotosDe(id);
+    for (const f of fs) {
+      if (subidas.has(f)) continue;
+      await storage().guardar(nombreFoto(f), readFileSync(join(FOTOS_DIR, `${f}.jpg`)), 'image/jpeg');
+      subidas.add(f);
     }
     await prisma.$transaction([
       prisma.loteImagen.deleteMany({ where: { loteId } }),
-      prisma.loteImagen.create({ data: { loteId, url: urlArchivo(nombreFoto(id)), orden: 0 } }),
+      prisma.loteImagen.createMany({ data: fs.map((f, orden) => ({ loteId, url: urlArchivo(nombreFoto(f)), orden })) }),
     ]);
     n++;
   }
