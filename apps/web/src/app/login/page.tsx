@@ -43,7 +43,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const { usuario } = await api<{ usuario: UsuarioSesion }>("/auth/login", { method: "POST", json: { email, password } });
+      const usuario = await api<UsuarioSesion>("/auth/login", { method: "POST", json: { email, password } });
       if (!marketplace) return router.push("/panel");
       // Cada modo tiene su propia entrada: si la cuenta aún no lo tiene, entra con el que sí tiene y se le ofrece activarlo.
       const modos = modosDeRol(usuario.empresa.rol);
