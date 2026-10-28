@@ -1,13 +1,116 @@
 "use client";
 
-import { useState } from "react";
-import { Badge, Btn } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Badge, Btn, inputCls } from "@/components/ui";
 import { Icono } from "@/components/vis/Iconos";
 import { api, ApiError } from "@/lib/api";
 
+type Uso = { titulo: string; detalle: string; cuidado: string };
+
+export interface ParaComprador {
+  modo: "gemini" | "local";
+  usos: Uso[];
+  encaje: string;
+  usaPerfil: boolean;
+  aviso?: string;
+}
+
+const CLAVE_NEGOCIO = "swapit:negocio";
+
+function ListaUsos({ usos }: { usos: Uso[] }) {
+  return (
+    <ul className="space-y-2">
+      {usos.map((u) => (
+        <li key={u.titulo} className="rounded-control border border-line bg-white p-3">
+          <p className="text-sm font-medium text-ink-900">{u.titulo}</p>
+          <p className="mt-0.5 text-sm text-ink-700">{u.detalle}</p>
+          {u.cuidado && <p className="mt-1 flex items-start gap-1.5 text-xs text-ambar-700"><Icono nombre="alerta" size={14} className="mt-px shrink-0" />{u.cuidado}</p>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Ficha de una oferta › «¿En qué te puede servir?», para el comprador: usos del material según su negocio (lo que escriba aquí,
+ * sus búsquedas y sus compras). Lo que escribe se recuerda solo en este navegador.
+ */
+export function PanelParaComprador({ loteId }: { loteId: string }) {
+  const [negocio, setNegocio] = useState("");
+  // Se lee después de montar: en el servidor no hay localStorage y el HTML inicial debe coincidir.
+  useEffect(() => {
+    try {
+      setNegocio(localStorage.getItem(CLAVE_NEGOCIO) ?? "");
+    } catch {
+      // Sin almacenamiento (ventana privada): se empieza vacío.
+    }
+  }, []);
+  const [res, setRes] = useState<ParaComprador | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
+
+  async function consultar() {
+    setCargando(true);
+    setError("");
+    try {
+      localStorage.setItem(CLAVE_NEGOCIO, negocio.trim());
+    } catch {
+      // Sin almacenamiento (ventana privada): solo no se recuerda.
+    }
+    try {
+      setRes(await api<ParaComprador>("/oportunidades/para-comprador", { method: "POST", json: { loteId, negocio: negocio.trim() || undefined } }));
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "No se pudo conectar con el servidor");
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  return (
+    <section aria-labelledby="servir" className="rounded-2xl border border-nav-100 bg-nav-50/50 p-4">
+      <h2 id="servir" className="text-sm font-semibold text-nav-900">¿En qué te puede servir?</h2>
+      <p className="text-xs text-ink-500">Ideas para aprovechar este material en tu negocio. Se analiza con IA de Google: no incluyas datos confidenciales.</p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={negocio}
+          onChange={(e) => setNegocio(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !cargando) consultar(); }}
+          maxLength={200}
+          placeholder="¿A qué se dedica tu negocio? (opcional) Ej. ladrillera, granja avícola"
+          aria-label="A qué se dedica tu negocio (opcional)"
+          className={inputCls}
+        />
+        <Btn type="button" variante="suave" onClick={consultar} disabled={cargando} className="shrink-0">
+          <Icono nombre="buscar" size={16} />
+          {cargando ? "Analizando…" : "Ver ideas"}
+        </Btn>
+      </div>
+
+      {error && <p role="alert" className="mt-3 text-sm text-error-ink">{error}</p>}
+
+      {res && (
+        <div className="mt-4 space-y-3" aria-live="polite">
+          <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink-700">
+            {res.usaPerfil ? "Según tu negocio" : "Usos posibles"}
+            <Badge tono={res.modo === "gemini" ? "azul" : "gris"}>{res.modo === "gemini" ? "Sugerencia de IA" : "Base de Swapit"}</Badge>
+          </p>
+          {res.encaje && <p className="rounded-control border border-pri-100 bg-pri-50 p-3 text-sm text-ink-900">{res.encaje}</p>}
+          {res.usos.length ? (
+            <ListaUsos usos={res.usos} />
+          ) : (
+            <p className="text-sm text-ink-500">No encontramos usos conocidos para este material. Pregúntale al vendedor por el chat.</p>
+          )}
+          {!res.usaPerfil && <p className="text-xs text-ink-500">Cuéntanos a qué se dedica tu negocio para ideas más precisas.</p>}
+          {res.aviso && <p className="text-xs text-ink-500">{res.aviso}</p>}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export interface Oportunidades {
   modo: "gemini" | "local";
-  usos: { titulo: string; detalle: string; cuidado: string }[];
+  usos: Uso[];
   industrias: string[];
   compradores: { necesidad: string; tipo: "EMPRESA" | "PERSONA"; distanciaKm: number | null; afinidad: number }[];
   aviso?: string;
@@ -60,15 +163,7 @@ export function PanelOportunidades({ titulo, descripcion, categoria }: { titulo:
               <Badge tono={res.modo === "gemini" ? "azul" : "gris"}>{res.modo === "gemini" ? "Sugerencia de IA" : "Base de Swapit"}</Badge>
             </h3>
             {res.usos.length ? (
-              <ul className="space-y-2">
-                {res.usos.map((u) => (
-                  <li key={u.titulo} className="rounded-control border border-line bg-white p-3">
-                    <p className="text-sm font-medium text-ink-900">{u.titulo}</p>
-                    <p className="mt-0.5 text-sm text-ink-700">{u.detalle}</p>
-                    {u.cuidado && <p className="mt-1 flex items-start gap-1.5 text-xs text-ambar-700"><Icono nombre="alerta" size={14} className="mt-px shrink-0" />{u.cuidado}</p>}
-                  </li>
-                ))}
-              </ul>
+              <ListaUsos usos={res.usos} />
             ) : (
               <p className="text-sm text-ink-500">No encontramos usos conocidos. Describe mejor el material: qué es, de qué proceso sale y en qué estado está.</p>
             )}

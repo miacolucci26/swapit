@@ -120,6 +120,70 @@ test('oportunidades: con Gemini devuelve sus usos, guarda la respuesta y, si fal
   }
 });
 
+// ---- Ficha › «¿En qué te puede servir?» (comprador) ----
+
+let loteMango = '';
+const publicarMango = async () => {
+  if (loteMango) return loteMango;
+  const r = await vende.post('/lotes', { ...CASCARA, categoriaCodigo: 'ORGANICO_AGRO', cantidad: 3, unidad: 'ton', modalidad: 'DONACION' });
+  assert.equal(r.status, 201, JSON.stringify(r.data));
+  loteMango = r.data.id;
+  return loteMango;
+};
+
+test('para comprador: sin IA da los usos del material y, si una búsqueda suya calza, se lo dice', async () => {
+  const id = await publicarMango();
+  const r = await compost.post('/oportunidades/para-comprador', { loteId: id });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.modo, 'local');
+  assert.ok(r.data.usos.length >= 1 && r.data.usos.length <= 3);
+  assert.equal(r.data.usaPerfil, true);
+  assert.match(r.data.encaje, /compostaje/, 'cita su búsqueda');
+  assert.match(r.data.encaje, /compost y biofertilizantes/);
+  // Quien busca chatarra no recibe un «encaje» inventado.
+  const otro = await chatarra.post('/oportunidades/para-comprador', { loteId: id });
+  assert.equal(otro.data.encaje, '');
+  assert.equal(otro.data.usaPerfil, false);
+});
+
+test('para comprador: no sobre la propia oferta, 404 si no existe y valida el texto del negocio', async () => {
+  const id = await publicarMango();
+  assert.equal((await vende.post('/oportunidades/para-comprador', { loteId: id })).status, 400);
+  assert.equal((await compost.post('/oportunidades/para-comprador', { loteId: 'no-existe' })).status, 404);
+  assert.equal((await compost.post('/oportunidades/para-comprador', { loteId: id, negocio: 'x'.repeat(201) })).status, 400);
+  assert.equal((await new Cliente(base).post('/oportunidades/para-comprador', { loteId: id })).status, 401);
+});
+
+test('para comprador: con Gemini envía el material y el negocio sin nombres, y guarda la respuesta por oferta y negocio', async () => {
+  const id = await publicarMango();
+  const g = app.select(OportunidadesModule).get(GeminiService, { strict: true });
+  const original = { hab: g.oportunidadesHabilitadas, rec: g.recomendarParaComprador };
+  const pedidos: { material: string; perfil: string | null }[] = [];
+  g.oportunidadesHabilitadas = () => true;
+  g.recomendarParaComprador = async (material: string, perfil: string | null) => {
+    pedidos.push({ material, perfil });
+    return { usos: [{ titulo: 'Cama para aves', detalle: 'Se seca y se usa como cama en galpones.', cuidado: '' }], encaje: 'Te sirve: tu granja usa cama absorbente.' };
+  };
+  try {
+    const r = await compost.post('/oportunidades/para-comprador', { loteId: id, negocio: 'Granja avícola' });
+    assert.equal(r.data.modo, 'gemini');
+    assert.equal(r.data.usaPerfil, true);
+    assert.equal(r.data.encaje, 'Te sirve: tu granja usa cama absorbente.');
+    assert.match(pedidos[0].material, /^Cáscara de mango\. .*Categoría: Residuos orgánicos/);
+    assert.match(pedidos[0].perfil ?? '', /Se dedica a: Granja avícola/);
+    assert.match(pedidos[0].perfil ?? '', /Busca: Cáscara, pulpa y descartes de fruta para compostaje/);
+    // Ni el nombre del comprador ni el del vendedor salen hacia la IA.
+    assert.ok(!JSON.stringify(pedidos).includes('BioCompost') && !JSON.stringify(pedidos).includes('Pulpas del Norte'));
+    await compost.post('/oportunidades/para-comprador', { loteId: id, negocio: 'Granja avícola' });
+    assert.equal(pedidos.length, 1, 'misma oferta y mismo negocio: sale de la caché');
+    await compost.post('/oportunidades/para-comprador', { loteId: id, negocio: 'Ladrillera' });
+    assert.equal(pedidos.length, 2, 'otro negocio: otra consulta');
+  } finally {
+    g.oportunidadesHabilitadas = original.hab;
+    g.recomendarParaComprador = original.rec;
+  }
+});
+
 test('oportunidades: exige sesión, valida la descripción y no existe en modo acopiadores', async () => {
   assert.equal((await lejos.post('/oportunidades/sugerir', { descripcion: 'corta' })).status, 400);
   assert.equal((await lejos.post('/oportunidades/sugerir', { descripcion: 'x'.repeat(2001) })).status, 400);

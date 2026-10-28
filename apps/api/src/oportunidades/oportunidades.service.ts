@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { usosParaMaterial } from '@swapit/shared';
+import { usoQueCalza, usosParaMaterial, usosParaNecesidad } from '@swapit/shared';
 import { Embedder, aVectorSql } from '../common/embeddings/embedder';
 import { GeminiService } from '../ia/gemini.service';
+import { LotesService } from '../lotes/lotes.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface Oportunidades {
@@ -12,6 +13,17 @@ export interface Oportunidades {
   industrias: string[];
   /** Alertas de búsqueda activas de otras cuentas que se parecen al material. Anónimas: sin nombre ni ubicación exacta. */
   compradores: { necesidad: string; tipo: 'EMPRESA' | 'PERSONA'; distanciaKm: number | null; afinidad: number }[];
+  aviso?: string;
+}
+
+/** Ficha de una oferta › «¿En qué te puede servir?», para el comprador. */
+export interface ParaComprador {
+  modo: 'gemini' | 'local';
+  usos: { titulo: string; detalle: string; cuidado: string }[];
+  /** Si le conviene a su negocio y por qué; vacío si no hay con qué decirlo. */
+  encaje: string;
+  /** true si se tuvo en cuenta su negocio (lo que escribió, sus búsquedas o sus compras). */
+  usaPerfil: boolean;
   aviso?: string;
 }
 
@@ -31,9 +43,65 @@ const PASO_KM = 5;
 @Injectable()
 export class OportunidadesService {
   /** Respuestas de Gemini por texto: volver a pulsar el botón (o dos vendedores con el mismo material) no gasta otra consulta. */
-  private readonly cache = new Map<string, Awaited<ReturnType<GeminiService['sugerirUsos']>>>();
+  private readonly cache = new Map<string, unknown>();
 
-  constructor(private readonly prisma: PrismaService, private readonly embedder: Embedder, private readonly gemini: GeminiService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly embedder: Embedder,
+    private readonly gemini: GeminiService,
+    private readonly lotes: LotesService,
+  ) {}
+
+  /** Respuesta guardada o, si no hay, la de Gemini. Solo se guardan respuestas buenas: un fallo pasajero no debe quedar fijo. */
+  private async conCache<T>(clave: string, pedir: () => Promise<T | null>): Promise<T | null> {
+    const k = clave.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (this.cache.has(k)) return this.cache.get(k) as T;
+    const r = await pedir();
+    if (r) {
+      if (this.cache.size >= MAX_CACHE) this.cache.delete(this.cache.keys().next().value as string);
+      this.cache.set(k, r);
+    }
+    return r;
+  }
+
+  async paraComprador(empresaId: string, loteId: string, negocio?: string): Promise<ParaComprador> {
+    // Mismas reglas de visibilidad que la ficha: un lote privado o inexistente es 404.
+    const l = await this.lotes.detalle(loteId, empresaId);
+    if (l.esMio) throw new BadRequestException('Es tu propia publicación');
+    const material = `${l.titulo}. ${l.descripcion}. Categoría: ${l.categoriaNombre}`;
+
+    // Lo que se sabe del negocio del comprador, sin nombres: lo que escribió, su CIIU, sus búsquedas y sus últimas compras.
+    const [empresa, alertas, compras] = await Promise.all([
+      this.prisma.empresa.findUnique({ where: { id: empresaId }, select: { ciiu: true } }),
+      this.prisma.alertaBusqueda.findMany({ where: { empresaId, activa: true }, orderBy: { createdAt: 'desc' }, take: 5, select: { texto: true } }),
+      this.prisma.transaccion.findMany({ where: { receptorId: empresaId }, orderBy: { createdAt: 'desc' }, take: 5, select: { lote: { select: { titulo: true } } } }),
+    ]);
+    const perfil = [
+      negocio ? `Se dedica a: ${negocio}` : '',
+      empresa?.ciiu ? `Código CIIU: ${empresa.ciiu}` : '',
+      alertas.length ? `Busca: ${alertas.map((a) => a.texto).join('; ')}` : '',
+      compras.length ? `Ya compró: ${compras.map((c) => c.lote.titulo).join('; ')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const conIa = this.gemini.oportunidadesHabilitadas();
+    if (conIa) {
+      const r = await this.conCache(`comprador|${loteId}|${perfil}`, () => this.gemini.recomendarParaComprador(material, perfil || null));
+      if (r) return { modo: 'gemini', ...r, encaje: perfil ? r.encaje : '', usaPerfil: !!perfil, aviso: 'Sugerencias generadas con IA (Google Gemini). Revísalas antes de decidir.' };
+    }
+
+    // Base local: usos del material y, si alguna de sus búsquedas pide justo eso, se dice.
+    const usos = usosParaMaterial(material).map(({ uso }) => ({ titulo: uso.titulo, detalle: uso.detalle, cuidado: uso.cuidado }));
+    const calce = alertas.map((a) => ({ a, uso: usoQueCalza(usosParaNecesidad(a.texto), material) })).find((x) => x.uso);
+    return {
+      modo: 'local',
+      usos: usos.slice(0, 3),
+      encaje: calce?.uso ? `Encaja con lo que buscas («${calce.a.texto}»): ${calce.uso.titulo.toLowerCase()}.` : '',
+      usaPerfil: !!calce,
+      ...(conIa ? { aviso: 'La IA no respondió a tiempo; te mostramos los usos de la base de Swapit.' } : {}),
+    };
+  }
 
   async sugerir(empresaId: string, q: ConsultaOportunidades): Promise<Oportunidades> {
     const cat = q.categoriaCodigo ? await this.prisma.categoriaResiduo.findUnique({ where: { codigo: q.categoriaCodigo } }) : null;
@@ -45,16 +113,7 @@ export class OportunidadesService {
   private async usos(texto: string, cat: { nombre: string; usoTipico: string | null } | null): Promise<Omit<Oportunidades, 'compradores'>> {
     const conIa = this.gemini.oportunidadesHabilitadas();
     if (conIa) {
-      const clave = texto.toLowerCase().replace(/\s+/g, ' ').trim();
-      let r = this.cache.get(clave);
-      if (r === undefined) {
-        r = await this.gemini.sugerirUsos(texto);
-        // Solo se guardan respuestas buenas: un fallo pasajero no debe quedar fijo.
-        if (r) {
-          if (this.cache.size >= MAX_CACHE) this.cache.delete(this.cache.keys().next().value as string);
-          this.cache.set(clave, r);
-        }
-      }
+      const r = await this.conCache(`vendedor|${texto}`, () => this.gemini.sugerirUsos(texto));
       if (r) return { modo: 'gemini', ...r, aviso: 'Sugerencias generadas con IA (Google Gemini) a partir de tu descripción. Revísalas antes de decidir.' };
     }
     const locales = usosParaMaterial(texto).map(({ uso }) => ({ titulo: uso.titulo, detalle: uso.detalle, cuidado: uso.cuidado }));

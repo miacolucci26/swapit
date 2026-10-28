@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { formatoCantidad } from "@swapit/shared";
 import { aproximar, esDemo, FotoLote, zonaAprox } from "@/components/LoteCard";
 import { creditoDeFoto } from "@/lib/creditosFotos";
+import { PanelParaComprador } from "@/components/PanelOportunidades";
 import { BotonFavorito, PrecioGrande } from "@/components/TarjetaOferta";
 import { Badge, Btn, Cargando, Estrellas, InsigniaDemo, LinkBtn, Vacio } from "@/components/ui";
 import { Icono } from "@/components/vis/Iconos";
@@ -168,6 +169,8 @@ export default function DetalleProducto() {
             <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-ink-700">{l.descripcion}</p>
             {entrega && <p className="mt-3 flex items-center gap-1.5 text-sm text-ink-700"><Icono nombre="camion" size={16} className="text-ink-500" />{entrega.etiqueta}</p>}
           </section>
+
+          {modoUso === "comprador" && !l.esMio && l.estado === "PUBLICADO" && <PanelParaComprador loteId={l.id} />}
 
           <section aria-labelledby="vendedor" className="flex items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4">
             <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-full bg-nav-700 text-lg font-semibold text-white">{l.razonSocial.charAt(0)}</span>

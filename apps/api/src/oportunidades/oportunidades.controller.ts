@@ -13,6 +13,11 @@ const sugerirSchema = z.object({
   categoriaCodigo: z.string().max(60).optional(),
 });
 
+const paraCompradorSchema = z.object({
+  loteId: z.string().min(1).max(40),
+  negocio: z.string().trim().max(200).optional(),
+});
+
 @SoloMarketplace()
 @Controller('oportunidades')
 @UseGuards(AuthGuard)
@@ -26,5 +31,15 @@ export class OportunidadesController {
     // Cada consulta puede gastar una llamada a Gemini: tope por cuenta para cuidar la cuota gratuita.
     limitar(`oportunidades:${req.user.empresaId}`, tope(30), 3600_000);
     return this.oportunidades.sugerir(req.user.empresaId, parseBody(sugerirSchema, body));
+  }
+
+  /** Ficha › «¿En qué te puede servir?»: usos de la oferta para este comprador, según su negocio si se conoce. */
+  @Post('para-comprador')
+  @HttpCode(200)
+  paraComprador(@Req() req: Request & { user: JwtPayload }, @Body() body: unknown) {
+    // Mismo tope que «sugerir»: ambos gastan la misma cuota de Gemini.
+    limitar(`oportunidades:${req.user.empresaId}`, tope(30), 3600_000);
+    const { loteId, negocio } = parseBody(paraCompradorSchema, body);
+    return this.oportunidades.paraComprador(req.user.empresaId, loteId, negocio || undefined);
   }
 }
