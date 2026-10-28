@@ -11,15 +11,18 @@ interface Opcion { href: string; etiqueta: string; icono: NombreIcono; aviso?: n
 /** Opciones de la bolita según el modo (docs/diseno/estructura-web.md §5). */
 export function opcionesBolita(modo: ModoUso, chatsPendientes: number, admin: boolean): Opcion[] {
   const chats: Opcion = { href: "/chats", etiqueta: "Chats", icono: "chat", aviso: chatsPendientes };
+  const panel: Opcion = { href: "/panel", etiqueta: "Panel", icono: "grafico" };
   const base: Opcion[] =
     modo === "comprador"
       ? [
+          panel,
           { href: "/perfil", etiqueta: "Perfil", icono: "usuario" },
           { href: "/compras", etiqueta: "Mis compras y pagos", icono: "documento" },
           { href: "/favoritos", etiqueta: "Favoritos", icono: "corazon" },
           chats,
         ]
       : [
+          panel,
           { href: "/perfil", etiqueta: "Perfil", icono: "usuario" },
           { href: "/mis-productos", etiqueta: "Mis productos", icono: "caja" },
           { href: "/finanzas", etiqueta: "Finanzas", icono: "documento" },

@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile --filter @swapit/api...",
-  "buildCommand": "pnpm --filter @swapit/shared build && pnpm exec prisma generate && pnpm exec nest build && if [ \"$SEED_AGREGAR_MARKETPLACE\" = \"1\" ]; then SEED_PERMITIR_PRODUCCION=1 node dist/seed/run-seed.js; fi",
+  "buildCommand": "pnpm --filter @swapit/shared build && pnpm exec prisma generate && pnpm exec nest build && if [ \"$SEED_AGREGAR_MARKETPLACE\" = \"1\" ] || [ \"$SEED_FOTOS_REALES\" = \"1\" ]; then SEED_PERMITIR_PRODUCCION=1 node dist/seed/run-seed.js; fi",
   "outputDirectory": "public",
   "regions": ["iad1"],
   "functions": {

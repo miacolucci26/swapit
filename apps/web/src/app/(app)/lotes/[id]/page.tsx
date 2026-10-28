@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { formatoCantidad } from "@swapit/shared";
 import { aproximar, esDemo, FotoLote, zonaAprox } from "@/components/LoteCard";
+import { creditoDeFoto } from "@/lib/creditosFotos";
 import { BotonFavorito, PrecioGrande } from "@/components/TarjetaOferta";
 import { Badge, Btn, Cargando, Estrellas, InsigniaDemo, LinkBtn, Vacio } from "@/components/ui";
 import { Icono } from "@/components/vis/Iconos";
@@ -27,6 +28,18 @@ const ESTADO: Record<string, { texto: string; tono: "verde" | "gris" | "ambar" }
   RETIRADO: { texto: "Ya no está publicada", tono: "gris" },
 };
 
+/** Autor y licencia de las fotos de demostración (Wikimedia Commons); las fotos de usuarios no llevan crédito. */
+function CreditoFoto({ url }: { url?: string }) {
+  const c = creditoDeFoto(url);
+  if (!c) return null;
+  return (
+    <p className="text-[11px] leading-snug text-zinc-500">
+      Foto de referencia: {c.autor || "autor anónimo"} · {c.licencia} ·{" "}
+      <a href={c.pagina} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">Wikimedia Commons</a>
+    </p>
+  );
+}
+
 function Galeria({ l }: { l: Lote }) {
   const [i, setI] = useState(0);
   const fotos = l.imagenes;
@@ -39,6 +52,7 @@ function Galeria({ l }: { l: Lote }) {
           <span className="num absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">{i + 1} / {fotos.length}</span>
         )}
       </div>
+      <CreditoFoto url={fotos[i]} />
       {fotos.length > 1 && (
         <div className="flex gap-2" role="group" aria-label="Fotos">
           {fotos.map((f, k) => (

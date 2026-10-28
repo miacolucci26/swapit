@@ -24,6 +24,7 @@ import { LocalStorageDriver, crearDriver, fijarStorage, storage } from '../stora
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { escribirImagenesDemo } from './imagenes-demo';
+import { prepararFotoReal, reemplazarIlustraciones } from './fotos-reales';
 import type { FotoLote } from './imagenes-demo';
 import { sembrarB2B } from './seed-b2b';
 
@@ -267,7 +268,7 @@ async function main() {
   // de producción con la demo de acopiadores), sin borrar nada. Con STORAGE_DRIVER=supabase sube además las ilustraciones al
   // bucket, porque en Vercel no se sirven archivos del disco.
   const agregar = process.env.SEED_AGREGAR_MARKETPLACE === '1';
-  const subirImagenes = agregar && process.env.STORAGE_DRIVER === 'supabase';
+  const subirImagenes = (agregar || process.env.SEED_FOTOS_REALES === '1') && process.env.STORAGE_DRIVER === 'supabase';
   // El seed escribe las ilustraciones en disco (driver local); al agregar en producción las URLs apuntan a Supabase Storage.
   fijarStorage(subirImagenes ? crearDriver(process.env, UPLOADS_DIR) : new LocalStorageDriver(UPLOADS_DIR));
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -289,7 +290,12 @@ async function main() {
   // Categorías, configuración y admin
   // Las categorías se sincronizan siempre (idempotente): así una base existente recibe las nuevas y sus unidades.
   await sincronizarCatalogo(prisma);
-  if (agregar && (await prisma.usuario.findFirst({ where: { email: 'carlos@biocompost.pe' } }))) {
+  // SEED_FOTOS_REALES=1: solo cambia las ilustraciones de las ofertas demo ya sembradas por fotos reales.
+  if (process.env.SEED_FOTOS_REALES === '1') {
+    await reemplazarIlustraciones(prisma);
+    return app.close();
+  }
+  if (agregar &&(await prisma.usuario.findFirst({ where: { email: 'carlos@biocompost.pe' } }))) {
     console.log('Las cuentas de demo del marketplace ya existen. Nada más que hacer.');
     return app.close();
   }
@@ -346,9 +352,11 @@ async function main() {
   const loteId: Record<string, string> = {};
   const crearLoteEmpresa = async (clave: string, l: LoteSeed) => {
     const { id, foto, fotos, ...datos } = l;
-    const imagenes = escribirImagenesDemo(`${clave}-${id}`, foto, colorDe(l.categoriaCodigo), fotos, l.titulo);
+    // Foto real si existe (seed-fotos/<id>.jpg); si no, la ilustración de siempre.
+    const real = prepararFotoReal(id);
+    const imagenes = real ? [real] : escribirImagenesDemo(`${clave}-${id}`, foto, colorDe(l.categoriaCodigo), fotos, l.titulo);
     if (subirImagenes) {
-      for (const n of imagenes) await storage().guardar(n, readFileSync(join(UPLOADS_DIR, n)), 'image/svg+xml').catch((e) => console.warn(`No se pudo subir ${n}: ${(e as Error).message}`));
+      for (const n of imagenes) await storage().guardar(n, readFileSync(join(UPLOADS_DIR, n)), real ? 'image/jpeg' : 'image/svg+xml').catch((e) => console.warn(`No se pudo subir ${n}: ${(e as Error).message}`));
     }
     const creado = await lotes.crear(empresaId[clave], { keywords: [], aceptaCreditos: false, frecuencia: 'UNICO', imagenes, entrega: 'RECOJO_RECEPTOR', ...datos });
     loteId[`${clave}:${id}`] = creado.id;
