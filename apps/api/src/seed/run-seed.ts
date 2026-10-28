@@ -20,7 +20,9 @@ import { MatchingService } from '../matching/matching.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransaccionesService } from '../transacciones/transacciones.service';
 import { UPLOADS_DIR } from '../common/uploads';
-import { LocalStorageDriver, fijarStorage } from '../storage/storage';
+import { LocalStorageDriver, crearDriver, fijarStorage, storage } from '../storage/storage';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { escribirImagenesDemo } from './imagenes-demo';
 import type { FotoLote } from './imagenes-demo';
 import { sembrarB2B } from './seed-b2b';
@@ -261,8 +263,13 @@ async function marcarDemo(prisma: PrismaService, desde: Date) {
 
 async function main() {
   exigirPermisoSeed();
-  // El seed escribe las ilustraciones en disco: siempre con el driver local, aunque el entorno pida Supabase.
-  fijarStorage(new LocalStorageDriver(UPLOADS_DIR));
+  // SEED_AGREGAR_MARKETPLACE=1: suma las cuentas y ofertas de demo del marketplace a una base que ya tiene datos (p. ej. la
+  // de producción con la demo de acopiadores), sin borrar nada. Con STORAGE_DRIVER=supabase sube además las ilustraciones al
+  // bucket, porque en Vercel no se sirven archivos del disco.
+  const agregar = process.env.SEED_AGREGAR_MARKETPLACE === '1';
+  const subirImagenes = agregar && process.env.STORAGE_DRIVER === 'supabase';
+  // El seed escribe las ilustraciones en disco (driver local); al agregar en producción las URLs apuntan a Supabase Storage.
+  fijarStorage(subirImagenes ? crearDriver(process.env, UPLOADS_DIR) : new LocalStorageDriver(UPLOADS_DIR));
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
   const prisma = app.get(PrismaService);
   // Hora de la base de datos (no del equipo): así el marcado de demo no depende de relojes distintos.
@@ -282,19 +289,25 @@ async function main() {
   // Categorías, configuración y admin
   // Las categorías se sincronizan siempre (idempotente): así una base existente recibe las nuevas y sus unidades.
   await sincronizarCatalogo(prisma);
-  if (process.env.SEED_RESET !== '1' && (await prisma.lote.count()) > 0) {
+  if (agregar && (await prisma.usuario.findFirst({ where: { email: 'carlos@biocompost.pe' } }))) {
+    console.log('Las cuentas de demo del marketplace ya existen. Nada más que hacer.');
+    return app.close();
+  }
+  if (!agregar && process.env.SEED_RESET !== '1' && (await prisma.lote.count()) > 0) {
     console.log('La base ya tiene datos de demo (categorías sincronizadas); usa SEED_RESET=1 para recrearlos. Nada más que hacer.');
     return app.close();
   }
   // Modo B2B2B (por defecto): demostración para intermediarios. El seed de abajo es el del marketplace.
-  if (modo() === 'B2B2B') {
+  if (modo() === 'B2B2B' && !agregar) {
     await sembrarB2B(app);
     await marcarDemo(prisma, inicio);
     return app.close();
   }
   const hash = await bcrypt.hash('demo1234', 10);
-  const adminEmp = await prisma.empresa.create({ data: { ruc: construirRuc('2000000001'), razonSocial: 'Swap It Moderación', rol: 'AMBOS', direccion: 'Piura, Perú', representanteLegal: 'Equipo Swap It', estadoKyb: 'VERIFICADA', metodoKyb: 'SIMULADA', esDemo: true } });
-  await prisma.usuario.create({ data: { email: 'admin@swapit.pe', nombre: 'Admin Swap It', passwordHash: await bcrypt.hash('admin12345', 10), rol: 'ADMIN', empresaId: adminEmp.id } });
+  if (!(await prisma.usuario.findFirst({ where: { email: 'admin@swapit.pe' } }))) {
+    const adminEmp = await prisma.empresa.create({ data: { ruc: construirRuc('2000000001'), razonSocial: 'Swap It Moderación', rol: 'AMBOS', direccion: 'Piura, Perú', representanteLegal: 'Equipo Swap It', estadoKyb: 'VERIFICADA', metodoKyb: 'SIMULADA', esDemo: true } });
+    await prisma.usuario.create({ data: { email: 'admin@swapit.pe', nombre: 'Admin Swap It', passwordHash: await bcrypt.hash('admin12345', 10), rol: 'ADMIN', empresaId: adminEmp.id } });
+  }
 
   // Empresas
   const actor: Record<string, JwtPayload> = {};
@@ -334,6 +347,9 @@ async function main() {
   const crearLoteEmpresa = async (clave: string, l: LoteSeed) => {
     const { id, foto, fotos, ...datos } = l;
     const imagenes = escribirImagenesDemo(`${clave}-${id}`, foto, colorDe(l.categoriaCodigo), fotos, l.titulo);
+    if (subirImagenes) {
+      for (const n of imagenes) await storage().guardar(n, readFileSync(join(UPLOADS_DIR, n)), 'image/svg+xml').catch((e) => console.warn(`No se pudo subir ${n}: ${(e as Error).message}`));
+    }
     const creado = await lotes.crear(empresaId[clave], { keywords: [], aceptaCreditos: false, frecuencia: 'UNICO', imagenes, entrega: 'RECOJO_RECEPTOR', ...datos });
     loteId[`${clave}:${id}`] = creado.id;
     return creado.id;
