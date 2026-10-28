@@ -15,6 +15,7 @@ import { ImpactoModule } from './impacto/impacto.module';
 import { LotesModule } from './lotes/lotes.module';
 import { MatchingModule } from './matching/matching.module';
 import { MaterialModule } from './material/material.module';
+import { OportunidadesModule } from './oportunidades/oportunidades.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TransaccionesModule } from './transacciones/transacciones.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
@@ -28,6 +29,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     AuthModule,
     LotesModule,
     MatchingModule,
+    OportunidadesModule,
     BenchmarkModule,
     FacturacionModule,
     MaterialModule,

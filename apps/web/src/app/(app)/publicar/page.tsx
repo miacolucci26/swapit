@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { crearLoteSchema, ETIQUETA_UNIDAD } from "@swapit/shared";
+import { PanelOportunidades } from "@/components/PanelOportunidades";
 import { RequiereModo } from "@/components/ShellMarket";
 import { Btn, Field, inputCls, PageHeader } from "@/components/ui";
 import { Icono } from "@/components/vis/Iconos";
@@ -51,6 +52,8 @@ function Formulario() {
   const [fotos, setFotos] = useState<Subida[]>([]);
   const [subiendo, setSubiendo] = useState(false);
   const [categoria, setCategoria] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [unidad, setUnidad] = useState<Unidad>("und");
   const [punto, setPunto] = useState<Punto | null>(null);
   const [direccion, setDireccion] = useState("");
@@ -164,7 +167,7 @@ function Formulario() {
 
         <section className="grid gap-4 rounded-2xl border border-zinc-200/80 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(24,24,27,0.04),0_8px_24px_-8px_rgba(24,24,27,0.10)] backdrop-blur-xl p-4 sm:grid-cols-2 sm:p-5">
           <div className="sm:col-span-2">
-            <Field label="Título"><input name="titulo" required minLength={5} maxLength={140} placeholder="Ej. Silla de madera en buen estado" className={inputCls} /></Field>
+            <Field label="Título"><input name="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} required minLength={5} maxLength={140} placeholder="Ej. Silla de madera en buen estado" className={inputCls} /></Field>
           </div>
           <Field label="Precio (S/)">
             <input name="precio" type="number" inputMode="decimal" min={0} step="0.01" required placeholder="0.00" className={inputCls} />
@@ -185,8 +188,11 @@ function Formulario() {
           </Field>
           <div className="sm:col-span-2">
             <Field label="Descripción" hint="Estado, medidas, qué incluye y cómo se entrega.">
-              <textarea name="descripcion" required minLength={10} maxLength={2000} rows={4} className={inputCls} />
+              <textarea name="descripcion" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required minLength={10} maxLength={2000} rows={4} className={inputCls} />
             </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <PanelOportunidades titulo={titulo} descripcion={descripcion} categoria={categoria} />
           </div>
         </section>
 

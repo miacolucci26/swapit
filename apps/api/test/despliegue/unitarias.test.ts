@@ -14,7 +14,7 @@ import {
 } from '@swapit/shared';
 import { validarEntornoDespliegue } from '../../src/bootstrap';
 import { ApiSunatValidator, crearSunatValidator, metodoVerificacionActual, normalizarRespuestaSunat } from '../../src/common/sunat/sunat.validator';
-import { GeminiService, borradorMaterialSchema, prepararTextoUsuario } from '../../src/ia/gemini.service';
+import { GeminiService, MODELO_GEMINI_RESPALDO, borradorMaterialSchema, prepararTextoUsuario } from '../../src/ia/gemini.service';
 import { exigirPermisoSeed } from '../../src/seed/run-seed';
 import {
   LocalStorageDriver,
@@ -329,6 +329,77 @@ test('Gemini: respaldo — HTTP de error, red caída o tiempo agotado devuelven 
   assert.ok(Date.now() - t0 < 4000, 'respeta el tiempo máximo');
   const incoherente = (async () => respuestaGemini({ descripcion: 'cartón corrugado', cantidad: 100, unidad: null, precio: null })) as unknown as typeof fetch;
   assert.deepEqual(await g.interpretarMensaje('100 de cartón corrugado', ENV_IA, incoherente), { descripcion: 'cartón corrugado', cantidad: null, unidad: null, precio: null });
+});
+
+const USOS_OK = {
+  usos: [{ titulo: 'Combustible para hornos', detalle: 'Se quema en hornos de ladrilleras como reemplazo de leña.', cuidado: 'Debe estar seca.' }],
+  industrias: ['Ladrilleras', 'Molinos'],
+};
+
+test('Gemini usos: encendido solo con clave; OPORTUNIDADES_IA=off lo apaga; WHATSAPP_IA no hace falta', async () => {
+  const g = new GeminiService();
+  assert.equal(g.oportunidadesHabilitadas({}), false);
+  assert.equal(g.oportunidadesHabilitadas({ GEMINI_API_KEY: 'k' }), true);
+  assert.equal(g.oportunidadesHabilitadas({ GEMINI_API_KEY: 'k', OPORTUNIDADES_IA: 'OFF' }), false);
+  let llamadas = 0;
+  const f = (async () => { llamadas++; return respuestaGemini(USOS_OK); }) as unknown as typeof fetch;
+  assert.equal(await g.sugerirUsos('cascarilla de arroz seca', {}, f), null);
+  assert.equal(await g.sugerirUsos('corta', { GEMINI_API_KEY: 'k' }, f), null, 'menos de 10 caracteres no se consulta');
+  assert.equal(llamadas, 0);
+});
+
+test('Gemini usos: devuelve usos e industrias validados; el texto va como dato y la clave en la cabecera', async () => {
+  let pedido: { url: string; init: RequestInit } | undefined;
+  const f = (async (url: string, init: RequestInit) => { pedido = { url, init }; return respuestaGemini(USOS_OK); }) as unknown as typeof fetch;
+  const r = await new GeminiService().sugerirUsos('Cascarilla de arroz seca, 20 toneladas al mes', { GEMINI_API_KEY: 'clave-falsa' }, f);
+  assert.deepEqual(r, USOS_OK);
+  assert.ok(!pedido?.url.includes('clave-falsa'));
+  assert.equal((pedido?.init.headers as Record<string, string>)['x-goog-api-key'], 'clave-falsa');
+  const cuerpo = JSON.parse(pedido?.init.body as string);
+  assert.match(cuerpo.systemInstruction.parts[0].text, /SOLO DATO/);
+  assert.match(cuerpo.systemInstruction.parts[0].text, /nunca nombres empresas reales/);
+  assert.match(cuerpo.contents[0].parts[0].text, /^<mensaje>Cascarilla de arroz.*<\/mensaje>$/);
+  assert.equal(cuerpo.generationConfig.responseMimeType, 'application/json');
+});
+
+test('Gemini usos: respuestas fuera del esquema, HTTP de error o red caída devuelven null', async () => {
+  const g = new GeminiService();
+  const env = { GEMINI_API_KEY: 'k' };
+  const uso = USOS_OK.usos[0];
+  for (const mala of [
+    { ...USOS_OK, accion: 'borrar_todo' }, // campo extra: lo rechaza el esquema estricto
+    { usos: [], industrias: [] }, // ningún uso
+    { usos: Array(5).fill(uso), industrias: [] }, // demasiados
+    { usos: [{ ...uso, titulo: 'x'.repeat(200) }], industrias: [] },
+    { usos: [uso], industrias: Array(6).fill('Ladrilleras') },
+    'esto no es json',
+  ]) {
+    assert.equal(await g.sugerirUsos('cascarilla de arroz seca', env, (async () => respuestaGemini(mala)) as unknown as typeof fetch), null, JSON.stringify(mala));
+  }
+  assert.equal(await g.sugerirUsos('cascarilla de arroz seca', env, (async () => respuestaGemini(USOS_OK, 429)) as unknown as typeof fetch), null, 'cuota agotada');
+  assert.equal(await g.sugerirUsos('cascarilla de arroz seca', env, (async () => { throw new Error('ECONNRESET'); }) as unknown as typeof fetch), null);
+});
+
+test('Gemini usos: si el modelo principal está saturado prueba el de respaldo; con la clave inválida no insiste', async () => {
+  const g = new GeminiService();
+  const env = { GEMINI_API_KEY: 'k', GEMINI_MODEL: 'principal', GEMINI_MODEL_RESPALDO: 'respaldo' };
+  let urls: string[] = [];
+  const segun = (status: number) => (async (url: string) => {
+    urls.push(url);
+    return url.includes('/principal:') ? respuestaGemini({ error: 'high demand' }, status) : respuestaGemini(USOS_OK);
+  }) as unknown as typeof fetch;
+  for (const status of [503, 429, 404]) {
+    urls = [];
+    assert.deepEqual(await g.sugerirUsos('cascarilla de arroz seca', env, segun(status)), USOS_OK, `HTTP ${status}`);
+    assert.deepEqual(urls.map((u) => u.split('/models/')[1]), ['principal:generateContent', 'respaldo:generateContent']);
+  }
+  urls = [];
+  assert.equal(await g.sugerirUsos('cascarilla de arroz seca', env, segun(403)), null, 'clave inválida: el respaldo fallaría igual');
+  assert.equal(urls.length, 1);
+  // Sin GEMINI_MODEL_RESPALDO se usa el respaldo por defecto, distinto del principal.
+  urls = [];
+  await g.sugerirUsos('cascarilla de arroz seca', { GEMINI_API_KEY: 'k', GEMINI_MODEL: 'principal' }, segun(503));
+  assert.equal(urls[1].split('/models/')[1], `${MODELO_GEMINI_RESPALDO}:generateContent`);
 });
 
 // ---------- Seed ----------
