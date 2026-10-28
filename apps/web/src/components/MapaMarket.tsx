@@ -86,9 +86,12 @@ export function MapaOfertas({ pins, seleccionado, onSelect, origen, className = 
   }, [pins, origen]);
 
   useEffect(() => {
+    // Solo se cambian las clases de color: reemplazar className borraría las de MapLibre (maplibregl-marker), que
+    // posicionan el pin, y todos quedarían corridos de su lugar.
     marcadores.current.forEach(({ m: mk, boton }, id) => {
       const elegido = id === seleccionado;
-      boton.className = `${CLASE_PIN} ${elegido ? PIN_ELEGIDO : PIN_NORMAL}`;
+      boton.classList.remove(...PIN_NORMAL.split(" "), ...PIN_ELEGIDO.split(" "));
+      boton.classList.add(...(elegido ? PIN_ELEGIDO : PIN_NORMAL).split(" "));
       mk.getElement().style.zIndex = elegido ? "2" : "";
     });
   }, [seleccionado, pins]);
