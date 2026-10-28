@@ -149,8 +149,12 @@ export default function HeroDiaNoche() {
       <PublicNav sobreHero />
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 pb-40 pt-28 text-center md:pb-48">
-        <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">Acopia con precio justo.</h1>
-        <p className="mx-auto mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_20px_rgba(0,0,0,0.65)] md:text-2xl">Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho.</p>
+        <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight [text-shadow:0_2px_30px_rgba(0,0,0,0.4)] sm:text-6xl md:text-8xl">{marketplace ? "Del residuo al recurso." : "Acopia con precio justo."}</h1>
+        <p className="mx-auto mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6),0_2px_20px_rgba(0,0,0,0.65)] md:text-2xl">
+          {marketplace
+            ? "Publica los excedentes de tu empresa o encuentra materia prima a buen precio. Negocia aquí y concreta el trato con seguridad."
+            : "Tus proveedores reportan por WhatsApp. Tú cotizas con precio de referencia y certificas cada despacho."}
+        </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <LinkBtn href={marketplace ? "/login?modo=comprador" : "/login"} className="min-h-12 rounded-full !bg-white px-7 !text-[#18181b] shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)] hover:!bg-zinc-100">{marketplace ? "Ingresar como Comprador" : "Probar la demo"}</LinkBtn>
           <LinkBtn href={marketplace ? "/login?modo=vendedor" : "/registro"} variante="borde" className="min-h-12 rounded-full border-white/40 bg-white/10 px-7 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20">{marketplace ? "Ingresar como Vendedor" : "Crear cuenta"}</LinkBtn>
