@@ -7,7 +7,7 @@ import { fecha, num, soles } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import type { EtapaAcuerdo, TransaccionItem } from "@/lib/types";
 import { TONO_ETAPA } from "./Transacciones";
-import { Badge, Cargando, KpiFranja, MES, PageHeader, Segmented, TablaDatos, Vacio, LinkBtn } from "./ui";
+import { Badge, Cargando, MES, PageHeader, Segmented, TablaDatos, Vacio, LinkBtn } from "./ui";
 import { Icono } from "./vis/Iconos";
 
 // Dashboard ejecutivo del marketplace: compras y ventas en un solo lugar, con trazabilidad de cada operación
@@ -49,6 +49,27 @@ function Tarjeta({ titulo, sub, children, className = "" }: { titulo: string; su
       {sub && <p className="mt-0.5 text-xs text-zinc-500">{sub}</p>}
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+type Tono = "neutro" | "ok" | "alerta";
+const TONO_VALOR: Record<Tono, string> = { neutro: "text-zinc-900", ok: "text-pri-700", alerta: "text-amber-700" };
+
+/** Indicadores principales: una franja de vidrio con cifras grandes (estilo de los paneles de Apple). */
+function Indicadores({ items }: { items: { etiqueta: string; valor: React.ReactNode; nota?: string; tono?: Tono; icono: Parameters<typeof Icono>[0]["nombre"] }[] }) {
+  return (
+    <dl className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      {items.map((it, i) => (
+        <div key={it.etiqueta} className={`${TARJETA} min-w-0 px-4 py-4 ${i === items.length - 1 && items.length % 2 ? "max-md:col-span-2" : ""}`}>
+          <dt className="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+            <span className="grid size-6 place-items-center rounded-full bg-zinc-900/[0.04] text-zinc-600"><Icono nombre={it.icono} size={14} /></span>
+            {it.etiqueta}
+          </dt>
+          <dd className={`num mt-2.5 truncate text-[26px] font-semibold leading-none tracking-tight ${TONO_VALOR[it.tono ?? "neutro"]}`}>{it.valor}</dd>
+          {it.nota && <dd className="mt-1.5 truncate text-xs text-zinc-500">{it.nota}</dd>}
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -143,16 +164,15 @@ export default function DashboardMarket() {
         }
       />
 
-      <KpiFranja
-        className="mb-5"
+      <Indicadores
         items={[
-          { etiqueta: "Compras", valor: soles(suma(compras)), nota: `${vivas(compras).length} operaciones` },
-          { etiqueta: "Ventas", valor: soles(suma(ventas)), nota: `${vivas(ventas).length} operaciones`, tono: "ok" },
-          { etiqueta: "Material recuperado", valor: `${num(imp?.toneladas ?? 0)} t`, nota: "En operaciones entregadas" },
+          { etiqueta: "Compras", valor: soles(suma(compras)), nota: `${vivas(compras).length} operaciones`, icono: "caja" },
+          { etiqueta: "Ventas", valor: soles(suma(ventas)), nota: `${vivas(ventas).length} operaciones`, tono: "ok", icono: "dinero" },
+          { etiqueta: "Material recuperado", valor: `${num(imp?.toneladas ?? 0)} t`, nota: "En operaciones entregadas", icono: "reciclar" },
           MOSTRAR_CO2
-            ? { etiqueta: "CO₂eq evitado", valor: `${num(imp?.co2EvitadoTon ?? 0)} t`, nota: "Estimado" }
-            : { etiqueta: "Disposición evitada", valor: soles(imp?.costoDisposicionEvitado ?? 0), nota: "Costo de relleno estimado" },
-          { etiqueta: "Requieren tu acción", valor: pendientes, nota: pendientes ? "Revisa la trazabilidad" : "Todo al día", tono: pendientes ? "alerta" : "neutro" },
+            ? { etiqueta: "CO₂eq evitado", valor: `${num(imp?.co2EvitadoTon ?? 0)} t`, nota: "Estimado", icono: "hoja" }
+            : { etiqueta: "Disposición evitada", valor: soles(imp?.costoDisposicionEvitado ?? 0), nota: "Costo de relleno estimado", icono: "hoja" },
+          { etiqueta: "Requieren tu acción", valor: pendientes, nota: pendientes ? "Revisa la trazabilidad" : "Todo al día", tono: pendientes ? "alerta" : "neutro", icono: "alerta" },
         ]}
       />
 
