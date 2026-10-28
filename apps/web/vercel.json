@@ -3,5 +3,5 @@
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile --filter @swapit/web...",
   "buildCommand": "pnpm --filter @swapit/shared build && pnpm exec next build",
-  "regions": ["gru1"]
+  "regions": ["iad1"]
 }

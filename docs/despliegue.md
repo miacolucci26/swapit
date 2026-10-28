@@ -16,7 +16,7 @@ Estado: **preparado, no publicado.** Este repositorio no trae cuentas ni claves;
 ```
 
 - **Dos proyectos de Vercel**, uno por carpeta (la vía que Vercel documenta para monorepos). La web reenvía `/api/*` a la API con una reescritura de Next (`API_URL`), así que el navegador solo habla con **un dominio** y las cookies de sesión son de primera parte.
-- La API es **una sola función** (Fluid compute). `apps/api/vercel.json` fija la región `gru1` (São Paulo, la más cercana a Perú), `maxDuration` 60 s y los archivos que la función necesita (`dist/**`, el esquema de Prisma). Prisma genera binarios para `native` y `rhel-openssl-3.0.x` (el entorno de Vercel).
+- La API es **una sola función** (Fluid compute). `apps/api/vercel.json` fija la región `iad1` (Virginia, la misma que la base de Supabase en us-east-1: la función debe estar junto a la base, no junto al usuario), `maxDuration` 60 s y los archivos que la función necesita (`dist/**`, el esquema de Prisma). Prisma genera binarios para `native` y `rhel-openssl-3.0.x` (el entorno de Vercel).
 - Alternativa soportada por Vercel (cero configuración): dejar que detecte NestJS por `src/main.ts` (el archivo ya cumple el formato: crea la app y hace `listen`). Preferimos `api/index.js` porque deja el empaquetado bajo nuestro control y se prueba en local (`pnpm humo`).
 
 ## 1. Supabase (base de datos e imágenes)

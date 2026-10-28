@@ -4,7 +4,7 @@
   "installCommand": "pnpm install --frozen-lockfile --filter @swapit/api...",
   "buildCommand": "pnpm --filter @swapit/shared build && pnpm exec prisma generate && pnpm exec nest build && if [ \"$SEED_AGREGAR_MARKETPLACE\" = \"1\" ]; then SEED_PERMITIR_PRODUCCION=1 node dist/seed/run-seed.js; fi",
   "outputDirectory": "public",
-  "regions": ["gru1"],
+  "regions": ["iad1"],
   "functions": {
     "api/index.js": {
       "maxDuration": 60,
